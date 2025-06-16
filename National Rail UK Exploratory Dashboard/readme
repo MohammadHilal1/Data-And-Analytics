@@ -1,1 +1,22 @@
-
+🚆 National Rail UK Exploratory Dashboard
+🥅 Project Goals
+This report provides a comprehensive analysis of National Rail UK’s performance, focusing on Passenger Usage, Sales Performance, Railway Operations, and Route Insights from January to April 2024.
+ Key metrics include journey trends, peak hours, revenue patterns, refund rates, delay reasons, and service disruptions.
+🔑 Key Steps
+1️⃣ Data Exploration
+Broke the analysis into four key areas: Passenger Usage, Sales, Performance, and Routes
+Identified relevant attributes such as age group, card holder type, ticket type, travel class
+Mapped KPIs including revenue, refund rates, delay durations, cancellations, and service reliability
+2️⃣ Data Preparation
+Built a custom Date table in Power Query to enable advanced time intelligence (e.g., YoY comparisons, weekday analysis)
+Extracted departure hour, created sort columns, and categorized card holders
+Engineered calculated columns for peak hour detection and train route classification
+🔍 Key Insights
+• Identified most popular routes and busiest travel hours
+ • Analyzed revenue by ticket type and class
+ • Measured refund trends across delay durations
+ • Evaluated service performance and passenger behavior trends
+⚙️ Tools & Skills Used
+Power BI · DAX · Data Modeling · Calculated Columns · Power Query · EDA
+📦 Dataset Source
+Based on the Maven Rail Challenge by Maven Analytics, using a realistic UK rail dataset.
