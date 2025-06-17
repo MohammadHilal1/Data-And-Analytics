@@ -1,12 +1,40 @@
 Massachusetts General Hospital KPI Dashboard
+🥅Project Goal
+Analyze and build reports around patient, encounter, and procedure data to provide KPI and operational performance reports, and to uncover deeper insights from the dataset.
 
-For the Maven Hospital Challenge, you’ll play the role of an Analytics Consultant for Massachusetts General Hospital (MGH).
+🔑Key Steps
+1️⃣ Data Exploration
 
-You’ve been asked to build a high-level KPI report for the executive team, based on a subset of patient records. The purpose of the report is to give stakeholders visibility into the hospital’s recent performance, and answer the following questions:
+Goals achieved in this step:
 
-How many patients have been admitted or readmitted over time?
-How long are patients staying in the hospital, on average?
-How much is the average cost per visit?
-How many procedures are covered by insurance?
+Broke down the analysis into non-admission encounters, Admission and Readmission encounters, and Procedures.
+Identified key metrics and attributes for each analysis section:
+Attributes from patient information, including key demographics such as Gender, Age, Age Group, Race, and Marital Status.
+Attributes from encounters and procedures, including encounter class, encounter description, procedure description, and procedure reasons.
+General metrics for encounters and procedures, including counts, costs, rates, Length of Stay (LOS), and averages.
+Special metrics for analyzing readmissions and mortalities, including the admission range, dates between the current visit and previous discharge, and dates between death and each admission.
+2️⃣ Data Preparation
+
+Goal: Prepare the data for an effective data model for analysis.
+
+Key steps taken:
+
+🔯In Power Query:
+Built dimension tables, including encounter class, age, age group, and date.
+Merged encounter and patient tables to get the age at encounter and the date differences between death and each encounter.
+Extracted the hour of each encounter visit.
+🔯In Power BI Desktop:
+Built a calculated table from the encounters table for admissions and readmissions, obtaining the previous discharge date for each admission record using the Offset function in DAX.
+Calculated LOS by minutes for non-admission encounters, and by days for admission encounters. Then built LOS bins for different minute ranges.
+Built an admission type calculated column to identify initial admissions and readmissions.
+Built a mortality indicator calculated column for mortality rate calculation.
+
+3️⃣ Data Model
+
+With the previous steps and preparations, the data model can be established for dashboard building.
+Special consideration was given to the procedures table. 
+Although there are possible links to dimension tables, the only relationship set is to the encounter table to ensure the correct linkage between encounters and procedures.
+
+
 
 
