@@ -1,4 +1,4 @@
-Massachusetts General Hospital KPI Dashboard
+Massachusetts General Hospital Executive KPI Dashboard
 🥅Project Goal
 Analyze and build reports around patient, encounter, and procedure data to provide KPI and operational performance reports, and to uncover deeper insights from the dataset.
 
@@ -30,10 +30,11 @@ Built an admission type calculated column to identify initial admissions and rea
 Built a mortality indicator calculated column for mortality rate calculation.
 
 3️⃣ Data Model
+With the earlier steps completed, the data model is now ready for dashboard development.
 
-With the previous steps and preparations, the data model can be established for dashboard building.
-Special consideration was given to the procedures table. 
-Although there are possible links to dimension tables, the only relationship set is to the encounter table to ensure the correct linkage between encounters and procedures.
+Special attention was given to the Procedures table. 
+While it has potential links to other dimension tables, only one relationship has been established — with the Encounters table. 
+This ensures a correct and consistent mapping between each procedure and its associated encounter.
 
 
 
