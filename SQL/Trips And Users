@@ -1,0 +1,60 @@
+-- Trips and Users
+-- Write a SQL query to find the cancellation rate of requests with unbanned users
+-- each day between "2023-10-01" and "2023-10-03".Round cancellation rate to 2 decimal points
+
+-- Script for creating table and inserting data.
+
+Create table  Trips (id int, client_id int, driver_id int, city_id int, status varchar(50), request_at varchar(50));
+Create table Users (users_id int, banned varchar(50), role varchar(50));
+Truncate table Trips;
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('1', '1', '10', '1', 'completed', '2013-10-01');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('2', '2', '11', '1', 'cancelled_by_driver', '2013-10-01');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('3', '3', '12', '6', 'completed', '2013-10-01');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('4', '4', '13', '6', 'cancelled_by_client', '2013-10-01');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('5', '1', '10', '1', 'completed', '2013-10-02');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('6', '2', '11', '6', 'completed', '2013-10-02');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('7', '3', '12', '6', 'completed', '2013-10-02');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('8', '2', '12', '12', 'completed', '2013-10-03');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('9', '3', '10', '12', 'completed', '2013-10-03');
+insert into Trips (id, client_id, driver_id, city_id, status, request_at) values ('10', '4', '13', '12', 'cancelled_by_driver', '2013-10-03');
+Truncate table Users;
+insert into Users (users_id, banned, role) values ('1', 'No', 'client');
+insert into Users (users_id, banned, role) values ('2', 'Yes', 'client');
+insert into Users (users_id, banned, role) values ('3', 'No', 'client');
+insert into Users (users_id, banned, role) values ('4', 'No', 'client');
+insert into Users (users_id, banned, role) values ('10', 'No', 'driver');
+insert into Users (users_id, banned, role) values ('11', 'No', 'driver');
+insert into Users (users_id, banned, role) values ('12', 'No', 'driver');
+insert into Users (users_id, banned, role) values ('13', 'No', 'driver');
+
+-- Solution
+
+--CTE to filter out the drivers from the users table that are not banned
+
+WITH trips_d AS (
+SELECT t.id, t.driver_id, u.role, u.banned, t.city_id, t.request_at  FROM trips AS t
+INNER JOIN
+users u 
+ON t.driver_id = u.users_id
+WHERE u.banned = "No"),
+
+--CTE to filter out the clients from the users table that are not banned
+trips_c AS (
+SELECT t.id, t.client_id, t.status, u.role, u.banned, t.city_id FROM trips AS t
+INNER JOIN
+users u
+ON t.client_id = u.users_id
+WHERE u.banned = "No"
+)
+
+-- Select statement to calculate the cancellation rate
+SELECT d.request_at,
+count(1) AS total_requests,
+sum(CASE WHEN c.status IN ("cancelled_by_client", "cancelled_by_driver") THEN 1 ELSE 0 END) cancelled_requests,
+round(sum(CASE WHEN c.status IN ("cancelled_by_client", "cancelled_by_driver") THEN 1 ELSE 0 END)/count(1) * 100, 2) AS cancellation_rate
+FROM trips_d AS d
+INNER JOIN 
+trips_c AS c
+ON
+c.id = d.id
+GROUP BY d.request_at;
