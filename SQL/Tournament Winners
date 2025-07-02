@@ -1,0 +1,62 @@
+-- Tournament Winners
+-- Write an sql query to find the winner in each group
+-- The winner in each group is the player ho scored the maximum total points within the group
+-- In case if there is a tie player with lower player_id wins
+
+-- Script to create the table and insert data
+
+create table players
+(player_id int,
+group_id int)
+
+insert into players values (15,1);
+insert into players values (25,1);
+insert into players values (30,1);
+insert into players values (45,1);
+insert into players values (10,2);
+insert into players values (35,2);
+insert into players values (50,2);
+insert into players values (20,3);
+insert into players values (40,3);
+
+create table matches
+(
+match_id int,
+first_player int,
+second_player int,
+first_score int,
+second_score int)
+
+insert into matches values (1,15,45,3,0);
+insert into matches values (2,30,25,1,2);
+insert into matches values (3,30,15,2,0);
+insert into matches values (4,40,20,5,2);
+insert into matches values (5,35,50,1,1);
+
+-- Solution
+
+-- Created a CTE to find each players total score and there group IDs
+WITH final_scores AS ( SELECT player_scores.player_id, 
+players.group_id, 
+sum(player_scores.score) AS total_score 
+FROM 
+(SELECT first_player AS player_id, 
+first_score AS score
+FROM matches
+UNION 
+SELECT second_player AS player_id, 
+second_score AS score 
+FROM matches) AS player_scores
+INNER JOIN 
+players
+ON player_scores.player_id = players.player_id
+GROUP BY players.group_id, player_scores.player_id),
+-- CTE to give rank each player within each group 
+final_ranking AS (
+SELECT final_scores.group_id,  
+final_scores.player_id, 
+final_scores.total_score,
+RANK() OVER (PARTITION BY final_scores.group_id ORDER BY final_scores.total_score DESC, final_scores.player_id ASC) AS rn 
+FROM final_scores)
+--Finally returning the players in each group having rank = 1
+SELECT group_id, player_id, total_score FROM final_ranking WHERE rn = 1;
