@@ -1,0 +1,31 @@
+-- The Pareto principle states that for many outcomes, roughly 80% of outcomes comes for 20% of causes eg:
+-- 80% of the productivity come from 20% of the employees
+-- 80% of your sales come from 20% of your clients
+-- 80% of the decision in the company are made in 20% of the time
+
+-- Here we are going to analyse the orders table to find whether it follows the pareto principle 
+
+-- Query to create table and insert table can be found at https://drive.google.com/drive/folders/1Dc81McsB4lp1JUIwssDmmOaw6Z7rBK8T
+
+-- Solution
+
+-- WE are going to create 2 cte in which the product_sales calculates the total sales for each product and return the result in descending order by sales
+-- In the second query we are going to calculate the running total and 80% of the total sales
+-- And finally in the select query we will return all those records whose running total <= 80% of the total sales
+WITH product_sales AS (
+SELECT Product_ID, 
+SUM(sales) AS sales
+FROM orders
+GROUP BY Product_ID
+ORDER BY sales DESC),
+aggregated_sales AS (SELECT Product_ID,
+sales,
+SUM(sales) OVER (ORDER BY sales DESC ROWS BETWEEN UNBOUNDED PRECEDING and 0 PRECEDING) AS running_sales,
+0.8*SUM(sales) OVER () AS total_sales
+FROM product_sales)
+SELECT * FROM  aggregated_sales WHERE running_sales <= total_sales;
+
+-- 413 rows returned and total rows are 1862 
+-- 413/1862 = 22 percent
+-- Which makes the conclusion that 80% of our sales comes from the 22% of the products.
+-- Which is almost close to 80/20 rule
