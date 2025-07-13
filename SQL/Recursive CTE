@@ -1,0 +1,34 @@
+-- There is a sales table which contains product id and its start and end period and a avg daily column.
+-- We have to create a solution which contains the product id and the sales year and total sales for that year.
+-- We will be using a recursive CTE which will help us to create all the dates within start and end period of each product.
+-- And later we are are going to aggregate the cte results to acheive the desired output.
+
+-- SQL query to create the table and insert data into it.
+
+create table sales (
+product_id int,
+period_start date,
+period_end date,
+average_daily_sales int
+);
+
+insert into sales values(1,'2019-01-25','2019-02-28',100),(2,'2018-12-01','2020-01-01',10),(3,'2019-12-01','2020-01-31',1);
+
+-- Solution
+
+WITH RECURSIVE sales_dates AS (
+SELECT MIN(period_start) AS dates, MAX(period_end) AS max_date FROM sales
+UNION ALL
+SELECT date_add(dates, INTERVAL 1 Day) AS dates, max_date
+FROM sales_dates
+WHERE dates < max_date
+)
+
+SELECT product_id, 
+YEAR(dates) AS sales_year, 
+SUM(average_daily_sales) AS total_amount 
+FROM sales_dates
+INNER JOIN sales 
+ON dates BETWEEN period_start AND period_end
+GROUP BY product_id, YEAR(dates)
+ORDER BY product_id, YEAR(dates);
