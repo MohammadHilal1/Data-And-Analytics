@@ -1,0 +1,57 @@
+-- Problem
+-- Prime Subscription rate by product action
+-- Given the two tables return the fraction of users rounded to 2 decimal places who accessed amazon music
+-- and upgrade to prime mebership within the first 30 days of signing up
+
+-- SQL query to create table and insert values
+
+create table users
+(
+user_id integer,
+name varchar(20),
+join_date date
+);
+INSERT INTO users (user_id, name, join_date)
+VALUES 
+  (1, 'Jon', '2020-02-14'), 
+  (2, 'Jane', '2020-02-14'), 
+  (3, 'Jill', '2020-02-15'), 
+  (4, 'Josh', '2020-02-15'), 
+  (5, 'Jean', '2020-02-16'), 
+  (6, 'Justin', '2020-02-17'),
+  (7, 'Jeremy', '2020-02-18');
+
+create table events
+(
+user_id integer,
+type varchar(10),
+access_date date
+);
+
+INSERT INTO events (user_id, type, access_date)
+VALUES
+  (1, 'Pay', '2020-03-01'), 
+  (2, 'Music', '2020-03-02'), 
+  (2, 'P', '2020-03-12'),
+  (3, 'Music', '2020-03-15'), 
+  (4, 'Music', '2020-03-15'), 
+  (1, 'P', '2020-03-16'), 
+  (3, 'P', '2020-03-22');
+
+-- Solutions to the problem
+-- 1
+SELECT 
+ROUND(COUNT(DISTINCT CASE WHEN DATEDIFF(e1.access_date, u.join_date) <= 30 THEN e.user_id END )/COUNT(Distinct u.user_id), 2)*100  AS Prime_Subscription_Rate
+FROM users u
+INNER JOIN EVENTS e
+ON u.user_id = e.user_id AND e.TYPE = "Music"
+LEFT JOIN EVENTS e1
+ON u.user_id = e1.user_id AND e1.TYPE = "P";
+
+-- 2
+SELECT
+ROUND(COUNT(DISTINCT CASE WHEN DATEDIFF(e.access_date, u.join_date) <= 30 THEN u.user_id ELSE null END)/ COUNT(DISTINCT u.user_id)*100,2) AS Prime_Subscription_Rate 
+FROM users u
+LEFT JOIN EVENTS e
+ON e.user_id = u.user_id AND e.TYPE = "P"
+WHERE u.user_id IN (SELECT user_id FROM EVENTS WHERE TYPE="Music");
