@@ -1,0 +1,35 @@
+--Problem
+-- Given a patient table find height of all patients who are taller than the average height of pateients of there own gender
+
+-- SQL query to create table and insert data
+
+CREATE TABLE patients (
+    patient_id INT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1),
+    birth_date DATE,
+    city VARCHAR(50),
+    height INT,
+    weight INT
+);
+
+INSERT INTO patients VALUES (1, 'Aarav', 'Sharma', 'M', '1990-12-31', 'Delhi', 168, 51);
+INSERT INTO patients VALUES (2, 'Siya', 'Kumar', 'F', '1991-12-31', 'Mumbai', 172, 73);
+INSERT INTO patients VALUES (3, 'Aryan', 'Singh', 'M', '1992-12-31', 'Bangalore', 160, 49);
+INSERT INTO patients VALUES (4, 'Diya', 'Gupta', 'F', '1993-12-31', 'Chennai', 160, 74);
+INSERT INTO patients VALUES (5, 'Rohan', 'Kumar', 'M', '1994-12-31', 'Kolkata', 181, 85);
+INSERT INTO patients VALUES (6, 'Ananya', 'Verma', 'F', '1995-12-31', 'Hyderabad', 185, 60);
+INSERT INTO patients VALUES (7, 'Vivaan', 'Kumar', 'M', '1996-12-31', 'Pune', 174, 58);
+INSERT INTO patients VALUES (8, 'Ishita', 'Sharma', 'F', '1997-12-31', 'Ahmedabad', 150, 45);
+INSERT INTO patients VALUES (9, 'Dhruv', 'Gupta', 'M', '1998-12-31', 'Jaipur', 157, 61);
+INSERT INTO patients VALUES (10, 'Myra', 'Singh', 'F', '1999-12-31', 'Lucknow', 171, 70);
+
+-- Solution
+
+WITH cte AS
+(SELECT *, 
+AVG(height) OVER (PARTITION BY gender) AS avg_height FROM patients)
+
+SELECT * FROM cte
+WHERE height > avg_height;
