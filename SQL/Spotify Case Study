@@ -1,0 +1,78 @@
+-- Spotify Case Study
+
+-- Sql query to create table and insert data
+CREATE table activity
+(
+user_id varchar(20),
+event_name varchar(20),
+event_date date,
+country varchar(20)
+);
+insert into activity values (1,'app-installed','2022-01-01','India')
+,(1,'app-purchase','2022-01-02','India')
+,(2,'app-installed','2022-01-01','USA')
+,(3,'app-installed','2022-01-01','USA')
+,(3,'app-purchase','2022-01-03','USA')
+,(4,'app-installed','2022-01-03','India')
+,(4,'app-purchase','2022-01-03','India')
+,(5,'app-installed','2022-01-03','SL')
+,(5,'app-purchase','2022-01-03','SL')
+,(6,'app-installed','2022-01-04','Pakistan')
+,(6,'app-purchase','2022-01-04','Pakistan');
+
+-- Solution
+
+-- find total active users each day 
+
+SELECT event_date, 
+count(DISTINCT user_id) as active_users 
+FROM activity 
+GROUP BY event_date;
+
+-- find total active users each week
+
+SELECT week(event_date) AS week, 
+count(DISTINCT user_id) AS active_users
+FROM activity
+GROUP BY week(event_date);
+
+-- Date wise total number of users who made the purchase same day they installed the app
+
+WITH CTE AS
+(SELECT event_date,
+user_id,
+LEAD(event_date) OVER (PARTITION BY event_date, user_id ORDER BY event_date) AS next_event_date
+FROM activity)
+
+SELECT event_date, count(CASE WHEN event_date = next_event_date THEN user_id END) AS users
+FROM CTE
+GROUP BY event_date;
+
+SELECT event_date, count(new_user) AS no_of_users FROM
+(SELECT user_id, event_date, CASE WHEN count(distinct event_name) = 2 THEN user_id ELSE NULL END AS new_user
+FROM activity 
+GROUP BY user_id, event_date) as sq
+GROUP BY sq.event_date;
+
+-- Percentage of paid users in India, USA and any other country should be tagged as others
+
+WITH cte AS
+(SELECT CASE WHEN country IN ("India", "USA") THEN country ELSE "Other" END AS country, 
+count(user_id) AS paid_users 
+FROM activity 
+WHERE event_name = "app-purchase" 
+GROUP BY CASE WHEN country IN ("India", "USA") THEN country ELSE "Other" END),
+total AS (SELECT SUM(paid_users) AS total_users FROM cte)
+SELECT country,round((paid_users/total_users)*100) AS percentage_users
+FROM cte, total;
+
+-- Among all the users who installed the app on a given day, how many did in app purchase on the ver next day
+
+WITH cte AS
+(SELECT user_id, event_date, 
+LAG(event_date) OVER (Partition by user_id order by event_date) AS prev_event_date 
+FROM activity)
+SELECT event_date, 
+count(CASE WHEN datediff(event_date, prev_event_Date) = 1 THEN user_id ELSE null END) 
+FROM cte 
+GROUP BY event_date;
