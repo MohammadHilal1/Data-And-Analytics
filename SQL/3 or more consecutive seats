@@ -1,0 +1,56 @@
+-- Problem 
+-- Find 3 or more consecutive empty seats
+-- SQL query to create table and insert date
+
+create table bms (seat_no int ,is_empty varchar(10));
+insert into bms values
+(1,'N')
+,(2,'Y')
+,(3,'N')
+,(4,'Y')
+,(5,'Y')
+,(6,'Y')
+,(7,'N')
+,(8,'Y')
+,(9,'Y')
+,(10,'Y')
+,(11,'Y')
+,(12,'N')
+,(13,'Y')
+,(14,'Y');
+
+-- Solution
+-- 1 using lag and lead
+WITH cte AS
+(Select *, 
+LAG(is_empty) over (order by seat_no) as prev_1,
+LAG(is_empty, 2) over (order by seat_no) as prev_2,
+LEAD(is_empty, 1) OVER (ORDER BY seat_no) AS next_1,
+LEAD(is_empty, 2) OVER (ORDER BY seat_no) AS next_2
+FROM bms)
+SELECT seat_no
+FROM cte
+WHERE (is_empty = prev_1 AND is_empty = prev_2) OR
+(is_empty = prev_1 AND is_empty = next_1) OR
+(is_empty = next_1 AND is_empty = next_2);
+
+-- 2 using advance aggregation
+WITH cte AS
+(SELECT seat_no, 
+is_empty,
+SUM(CASE WHEN is_empty = "Y" THEN 1 ELSE 0 END) OVER (ORDER BY seat_no ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS prev_2,
+SUM(CASE WHEN is_empty = "Y" THEN 1 ELSE 0 END) OVER (ORDER BY seat_no ROWS BETWEEN 1 PRECEDING AND 1 following) AS prev_next_1,
+SUM(CASE WHEN is_empty = "Y" THEN 1 ELSE 0 END) OVER (ORDER BY seat_no ROWS BETWEEN CURRENT ROW AND 2 following) AS next_2
+FROM bms)
+SELECT seat_no FROM cte
+WHERE prev_2 = 3 OR prev_next_1 = 3 OR next_2 = 3;
+
+--3 using row_number function
+WITH cte AS
+(
+SELECT *, ROW_NUMBER() OVER (ORDER BY seat_no) AS rn FROM bms
+WHERE is_empty = "Y"
+),
+cte2 AS (SELECT *, seat_no - rn AS diff FROM cte),
+diff AS (SELECT diff, count(*) AS dif_count FROM cte2 GROUP BY diff HAVING dif_count >= 3)
+SELECT seat_no FROM cte2 WHERE diff IN (SELECT diff FROM diff);
