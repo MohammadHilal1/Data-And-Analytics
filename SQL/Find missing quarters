@@ -1,0 +1,51 @@
+-- Problem
+-- Find missing quarters for each store
+-- SQL query to create table and insert data
+CREATE TABLE STORES (
+Store varchar(10),
+Quarter varchar(10),
+Amount int);
+
+INSERT INTO STORES (Store, Quarter, Amount)
+VALUES ('S1', 'Q1', 200),
+('S1', 'Q2', 300),
+('S1', 'Q4', 400),
+('S2', 'Q1', 500),
+('S2', 'Q3', 600),
+('S2', 'Q4', 700),
+('S3', 'Q1', 800),
+('S3', 'Q2', 750),
+('S3', 'Q3', 900);
+
+------ Solution
+1 -- Using aggregation
+SELECT Store,
+CONCAT('Q',CAST(10 - SUM((CAST(SUBSTRING(Quarter, 2) AS UNSIGNED))) AS CHAR)) AS q_num
+FROM stores
+GROUP BY Store;
+
+2-- Using Recursive CTE
+WITH RECURSIVE cte AS 
+(
+	SELECT DISTINCT(store) AS store, 1 AS q_num FROM stores
+    UNION ALL
+    SELECT store, q_num + 1 AS q_num FROM cte
+    WHERE q_num < 4
+),
+quarters AS (
+	SELECT store, CONCAT('Q', CAST(q_num AS Char)) AS quarter FROM cte
+)
+SELECT q.store, q.Quarter FROM quarters q
+LEFT JOIN stores s
+ON s.Store = q.store AND q.quarter= s.Quarter
+WHERE s.Store IS NULL;
+
+3-- Using cross join
+WITH cte AS (
+SELECT DISTINCT s1.store, s2.quarter FROM 
+stores s1, stores s2
+)
+SELECT c.store, c.quarter FROM
+cte c LEFT JOIN stores s
+ON s.store = c.store ANd s.quarter = c.quarter
+WHERE s.store Is NULL;
