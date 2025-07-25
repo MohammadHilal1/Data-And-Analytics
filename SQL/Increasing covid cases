@@ -1,0 +1,47 @@
+-- Find cities where covid cases are increasing continuously
+
+-- SQL query to create table and insert data
+
+create table covid(city varchar(50),days date,cases int);
+insert into covid values('DELHI','2022-01-01',100);
+insert into covid values('DELHI','2022-01-02',200);
+insert into covid values('DELHI','2022-01-03',300);
+
+insert into covid values('MUMBAI','2022-01-01',100);
+insert into covid values('MUMBAI','2022-01-02',100);
+insert into covid values('MUMBAI','2022-01-03',300);
+
+insert into covid values('CHENNAI','2022-01-01',100);
+insert into covid values('CHENNAI','2022-01-02',200);
+insert into covid values('CHENNAI','2022-01-03',150);
+
+insert into covid values('BANGALORE','2022-01-01',100);
+insert into covid values('BANGALORE','2022-01-02',300);
+insert into covid values('BANGALORE','2022-01-03',200);
+insert into covid values('BANGALORE','2022-01-04',400);
+
+------ Solution 
+--1. Using Rank Window Function
+WITH cte AS
+(SELECT 
+* ,
+RANK() OVER (PARTITION BY city ORDER BY days ASC) AS rn_days,
+RANK() OVER (PARTITION BY city ORDER BY cases ASC) AS rn_cases,
+CAST(RANK() OVER (PARTITION BY city ORDER BY days ASC) AS SIGNED) - CAST(RANK() OVER (PARTITION BY city ORDER BY cases ASC)AS SIGNED) AS diff
+FROM covid
+ORDER BY city, days ASC)
+SELECT city FROM cte
+GROUP BY city
+HAVING COUNT(DISTINCT diff) = 1 and MAX(diff) = 0;
+
+--2. Using LAG Window Function
+WITH cte AS 
+(
+SELECT city, days, cases,
+LAG(cases) OVER (PARTITION BY city ORDER BY days) AS prev_cases
+FROM covid
+)
+SELECT * FROM cte;
+SELECT city FROM cte
+GROUP BY city
+HAVING SUM(CASE WHEN prev_cases IS NULL OR cases > prev_cases THEN 0 ELSE 1 END) = 0;
