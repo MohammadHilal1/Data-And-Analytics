@@ -1,0 +1,21 @@
+-- Find students who have scored equal marks in every subject
+
+-- SQL query to create table and insert data
+create table exams (student_id int, subject varchar(20), marks int);
+insert into exams values (1,'Chemistry',91),(1,'Physics',91)
+,(2,'Chemistry',80),(2,'Physics',90)
+,(3,'Chemistry',80)
+,(4,'Chemistry',71),(4,'Physics',54);
+
+------ Solution
+--1. USING GROUP BY
+SELECT student_id
+FROM exams
+WHERE subject in ("Physics", "Chemistry")
+GROUP BY student_id
+HAVING count(subject) = 2 and count(distinct marks) = 1;
+
+--2. Using CROSS JOIN
+SELECT DISTINCT e1.student_id FROM exams e1
+JOIN exams e2 on e1.student_id = e2.student_id and e1.subject != e2.subject
+where e2.marks = e1.marks;
