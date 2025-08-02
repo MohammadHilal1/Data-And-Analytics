@@ -1,0 +1,67 @@
+# 📊 Sales Performance Analysis (Power BI)
+
+This Power BI project analyzes sales data from two consecutive years to uncover the causes behind a significant sales decline and recommend actionable business improvements. 
+The analysis helps identify regional and product-level trends, customer attrition patterns, and potential growth opportunities.
+
+## 🔍 Project Objective
+
+The primary goal of this project is to:
+- Investigate the reasons for a noticeable **sales drop of 27K units** between 2018 and 2019.
+- Understand **customer attrition**, which was found to be **94.02%**.
+- Evaluate performance across **regions, categories, and products**.
+- Recommend **strategies to retain customers and boost sales**.
+
+## 📁 Dataset
+
+The dataset contains:
+- Sales data for the years **2018 and 2019**
+- Customer and product details
+- Regional breakdown
+- Category-wise sales
+- Performance metrics
+
+⚠️ *Note: The data has been anonymized and cleaned before visualization.*
+
+## 📌 Key Features
+
+### ✅ Dashboard Sections:
+1. **Overview**
+   - Total sales for 2018 and 2019
+   - Sales drop & customer attrition rate
+   - Total customers & product count
+
+2. **Region & Segment Performance**
+   - Sales by region (2018 vs 2019)
+   - Sales by category
+   - Performance highlights
+
+3. **Revenue Shift Analysis**
+   - Top-performing products comparison across years
+   - Regional sales trends
+   - Observations and insights
+
+### 📈 Key Insights:
+- Overall sales dropped by **11.3%** in 2019.
+- **Lombardia region**, which had the highest sales in 2018, saw a **13% decrease** in 2019.
+- Sales dropped across **all categories**, including top-selling products.
+- Drastic **customer churn**, indicating poor customer retention.
+
+## 💡 Recommendations
+
+- Improve customer retention strategies (e.g., loyalty programs, feedback collection).
+- Reinvest in top-performing regions and categories with targeted marketing.
+- Investigate reasons behind customer attrition through surveys or interviews.
+- Run A/B tests for pricing, promotions, and bundling on declining product lines.
+
+## 🛠 Tools Used
+
+- **Power BI** (for visualization)
+- **DAX** (for custom measures like attrition rate, sales drop)
+- **Excel / CSV** (for raw data manipulation)
+
+## 📚 Learnings
+
+- Building multi-tab Power BI dashboards
+- Creating calculated columns & measures using DAX
+- Performing year-over-year comparisons
+- Visual storytelling with data
