@@ -1,0 +1,71 @@
+# Students tet result dataset is given and asked by the department to answer the questions.
+
+# Sql query to create table and insert data
+
+CREATE TABLE students(
+ studentid int NULL,
+ studentname nvarchar (255) NULL,
+ subject nvarchar (255) NULL,
+ marks int NULL,
+ testid int NULL,
+ testdate date NULL
+);
+insert into students values (2,'Max Ruin','Subject1',63,1,'2022-01-02');
+insert into students values (3,'Arnold','Subject1',95,1,'2022-01-02');
+insert into students values (4,'Krish Star','Subject1',61,1,'2022-01-02');
+insert into students values (5,'John Mike','Subject1',91,1,'2022-01-02');
+insert into students values (4,'Krish Star','Subject2',71,1,'2022-01-02');
+insert into students values (3,'Arnold','Subject2',32,1,'2022-01-02');
+insert into students values (5,'John Mike','Subject2',61,2,'2022-11-02');
+insert into students values (1,'John Deo','Subject2',60,1,'2022-01-02');
+insert into students values (2,'Max Ruin','Subject2',84,1,'2022-01-02');
+insert into students values (2,'Max Ruin','Subject3',29,3,'2022-01-03');
+insert into students values (5,'John Mike','Subject3',98,2,'2022-11-02');
+
+------ Solution Analysis --------
+
+-- Write an sql query to get the list of students who scored above the average marks in each subject
+
+WITH avg_cte AS
+(SELECT subject, AVG(marks) AS average FROM students
+GROUP BY subject)
+SELECT 
+*
+FROM 
+students s 
+INNER JOIN
+avg_cte ac
+ON s.subject = ac.subject
+WHERE s.marks > ac.average;
+
+-- Write an SQL query to get the percentage of students who scored more than 90 in any subject among the total students
+
+SELECT 
+round(count(DISTINCT studentid)/(SELECT count(DISTINCT studentid) FROM students) * 100, 2) AS percent_of_students_scored_above_90 
+FROM students WHERE marks > 90;
+
+-- Write an sql query to get the second highest and second lowest score for each subject
+
+WITH cte AS
+(SELECT *, 
+RANK() OVER (PARTITION BY subject ORDER BY marks ASC) AS rn_1,
+RANK() OVER (PARTITION BY subject ORDER BY marks DESC) AS rn_2
+FROM students)
+SELECT subject, 
+MAX(marks) AS second_highest_marks,
+MIN(marks) AS second_lowest_marks
+FROM
+cte 
+WHERE rn_1 = 2 OR rn_2 = 2
+GRoUP BY subject;
+
+-- For each student and test, identify if there marks increased or decreased form the previous test
+
+WITH cte AS
+(SELECT *,  
+LAG(marks) OVER (PARTITION BY studentid ORDER BY testdate) AS prev_test_marks 
+FROM students)
+SELECT studentid, testid, marks,
+CASE WHEN marks > prev_test_marks THEN "Inreased" WHEN marks < prev_test_marks THEN "Decreased" ELSE "First Test" END AS status
+FROM cte
+ORDER BY studentid;
