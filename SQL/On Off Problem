@@ -1,0 +1,36 @@
+# You are given a table named event_status that logs the status of a system at various timestamps. The system can be in one of two states:
+"on" — the system is actively running
+"off" — the system is inactive or turned off
+Each row in the table represents a status change at a specific time (event_time). Your task is to:
+Identify continuous sessions where the system was "on" without interruption.
+
+For each such session, determine:
+The start time of the session (login) — when the system turned "on" after being "off"
+The end time of the session (logout) — when the system turned "off" again
+The number of 'on' entries in that session (excluding the ending 'off' row)
+
+# SQL query to create table and insert data
+create table event_status
+(
+event_time varchar(10),
+status varchar(10)
+);
+insert into event_status 
+values
+('10:01','on'),('10:02','on'),('10:03','on'),('10:04','off'),('10:07','on'),('10:08','on'),('10:09','off')
+,('10:11','on'),('10:12','off');
+
+---- Solution ----
+WITH cte AS
+(SELECT *, LAG(status, 1, status) OVER (ORDER BY event_time ASC) as prev_status FROM event_status),
+cte1 AS
+(SELECT 
+*, SUM(CASE WHEN status = "on" and prev_status = "off" THEN 1 ELSE 0 END) OVER (order by event_time) as group_key
+FROM cte)
+SELECT min(event_time) AS login,
+max(event_time) AS logout,
+count(1)-1 AS on_count
+FROM
+cte1
+GROUP BY group_key;
+
