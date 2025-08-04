@@ -1,0 +1,31 @@
+# You are given a table named players_location that contains the names of players along with the city they are from. 
+Your task is to pivot this data such that each row displays one player from each city side by side, grouped by their row number within the city.
+
+Specifically:
+For each city (Mumbai, Delhi, Bangalore), assign a row number to players ordered alphabetically within the city.
+Use these row numbers as a grouping mechanism to display a horizontal view where each row contains:
+One player from Bangalore
+One player from Delhi
+One player from Mumbai
+
+# SQL query to create table and insert data
+create table players_location
+(
+name varchar(20),
+city varchar(20)
+);
+insert into players_location
+values ('Sachin','Mumbai'),('Virat','Delhi') , ('Rahul','Bangalore'),('Rohit','Mumbai'),('Mayank','Bangalore');
+
+---- Solution ----
+WITH cte AS
+(SELECT *, 
+ROW_NUMBER() OVER (PARTITION BY city ORDER BY name) AS player_groups
+FROM players_location)
+SELECT 
+MAX(CASE WHEN city="Bangalore" THEN name END) AS Bangalore,
+MAX(CASE WHEN city="Delhi" THEN name END) AS Delhi,
+MAX(CASE WHEN city="Mumbai" THEN name END) AS Mumbai
+FROM cte
+GROUP BY player_groups
+ORDER BY player_groups;
