@@ -1,0 +1,24 @@
+--You are given a table business_city that records the cities (city_id) where business activities took place, along with the corresponding business_date.
+--The goal is to determine how many new cities started having business activities in each year.
+--Specifically, you need to:
+--Extract the year from each business_date.
+--For each year, identify cities that did not have any business activity in previous years (i.e., they appear for the first time in that year).
+--Return the year and the count of such newly active cities.
+--This helps track geographic expansion over time.
+
+-- SQL query to create table and insert data
+create table business_city (
+business_date date,
+city_id int
+);
+insert into business_city
+values(cast('2020-01-02' as date),3),(cast('2020-07-01' as date),7),(cast('2021-01-01' as date),3),(cast('2021-02-03' as date),19)
+,(cast('2022-12-01' as date),3),(cast('2022-12-15' as date),3),(cast('2022-02-28' as date),12);
+
+-- Solution --
+WITH cte AS
+(SELECT YEAR(business_date) AS bus_year, city_id FROM business_city)
+SELECT c1.bus_year, count(distinct c1.city_id) AS cities FROM cte c1 
+LEFT JOIN cte c2 ON c1.bus_year > c2.bus_year AND c1.city_id = c2.city_id
+WHERE c2.bus_year IS NULL
+GROUP BY c1.bus_year;
