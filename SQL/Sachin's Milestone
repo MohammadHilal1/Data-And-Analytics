@@ -1,0 +1,41 @@
+-- Identify the first match and inning in which Sachin Tendulkar crossed major 
+-- career milestones (e.g., 1000, 5000, and 10000 runs) based on his cumulative batting performance over time.
+
+Link to download dataset : https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbFl1anpsa3hVVUxLZDJMdGNWaTVmVFJTZy1xd3xBQ3Jtc0trM0Q3dFIzZzFLajhRMnZIUmhweHBaNDdtaHpLYTJPeG1lOWFVUEVPN3BWc05aYnpXQjJjNVJoZHBGQnhhNGtTVjQ5SlRyOVFPR29hYXhSU1dFVzdRY2RqOUtUYVhHc0NlV0NvU3ZsRjdWQ0hLc0VJOA&q=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2F1-utCWJ4PseJjLipW15Gm9lVG5J6FrmOR%2Fedit%3Fusp%3Dsharing%26ouid%3D106155540926582191100%26rtpof%3Dtrue%26sd%3Dtrue&v=7LufPVm01NQ
+
+-- Solution --
+
+(SELECT *, 
+SUM(Runs) OVER (ORDER BY match_date) total_runs 
+FROM sachin_batting_scores),
+cte1 AS (
+SELECT 1 AS milestone_number, 1000 AS milestone_runs
+UNION ALL
+SELECT 2 AS milestone_number, 5000 AS milestone_runs
+UNION ALL
+SELECT 3 AS milestone_number, 10000 AS milestone_runs
+)
+SELECT milestone_number, 
+milestone_runs, 
+min(cte.Match) AS milestone_match, 
+min(cte.Innings) AS milestone_inning FROM cte 
+INNER JOIN cte1
+ON cte.total_runs > cte1.milestone_runs
+GROUP BY milestone_number, milestone_runs;
+
+-- Using cte and Case
+WITH cte AS
+(SELECT *, 
+SUM(Runs) OVER (ORDER BY match_date) total_runs 
+FROM sachin_batting_scores),
+cte1 AS
+(SELECT *, 
+CASE WHEN total_runs >= 1000 and total_runs < 5000 THEN 1000
+WHEN total_runs >= 5000 and total_runs < 10000 THEN 5000
+WHEN total_runs >= 10000 THEN 10000 END AS milestone FROM cte)
+
+SELECT milestone, min(cte1.Match) AS milestone_match,
+min(Innings) AS milestone_inning
+FROM cte1
+WHERE milestone IS NOT NULL
+GROUP BY milestone;
