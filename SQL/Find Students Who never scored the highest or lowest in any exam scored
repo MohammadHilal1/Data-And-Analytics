@@ -1,0 +1,44 @@
+-- identify students whose scores were never the top score and never the bottom score in any of the exams they attempted.
+-- Dataset Description:
+-- Table: students
+-- student_id: Unique ID of the student
+-- student_name: Name of the student
+-- Table: exams
+-- exam_id: Unique ID for each exam
+-- student_id: Student who took the exam
+-- score: Marks obtained in the exam
+
+-- query to create table and insert data
+
+create table students
+(
+student_id int,
+student_name varchar(20)
+);
+insert into students values
+(1,'Daniel'),(2,'Jade'),(3,'Stella'),(4,'Jonathan'),(5,'Will');
+
+create table exams
+(
+exam_id int,
+student_id int,
+score int);
+
+insert into exams values
+(10,1,70),(10,2,80),(10,3,90),(20,1,80),(30,1,70),(30,3,80),(30,4,90),(40,1,60)
+,(40,2,70),(40,4,80);
+
+-- Solution --
+
+WITH cte1 AS
+(SELECT exams.*, students.student_name FROM exams
+INNER JOIN students ON
+exams.student_id = students.student_id),
+cte2 AS 
+(SELECT *, MAX(score) OVER (Partition By exam_id) AS max_score, MIN(score) OVER (partition by exam_id) AS min_score
+FROM cte1
+)
+SELECT student_name
+FROM cte2
+GROUP BY student_name
+HAVING SUM(CASE WHEN score > min_score AND score < max_score THEN 0 else 1 END) = 0;
