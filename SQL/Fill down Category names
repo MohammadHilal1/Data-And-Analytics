@@ -1,0 +1,27 @@
+-- associate each brand with its correct category when only the first brand in a group has the category name, and subsequent rows have NULL for category.
+
+-- Sql query to create table and insert data
+
+create table brands 
+(
+category varchar(20),
+brand_name varchar(20)
+);
+insert into brands values
+('chocolates','5-star')
+,(null,'dairy milk')
+,(null,'perk')
+,(null,'eclair')
+,('Biscuits','britannia')
+,(null,'good day')
+,(null,'boost');
+
+-- Solution --
+
+WITH cte1 AS
+(SELECT *, ROW_NUMBER() OVER () AS rn FROM brands),
+cte2 AS 
+(SELECT *, LEAD(rn,1) OVER () AS next_rn FROM cte1 WHERE category IS NOT NULL)
+SELECT cte2.category, cte1.brand_name FROM cte2 
+INNER JOIN cte1
+ON cte1.rn >= cte2.rn AND (cte1.rn <= cte2.next_rn-1 OR cte2.next_rn Is NULL);
