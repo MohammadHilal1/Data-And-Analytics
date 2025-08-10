@@ -1,0 +1,31 @@
+-- A company wants to hire new employees. The budget for the company is $70000.The company's criteria for hiring are.
+-- Keep hiring the seniors with the smallest salary until you cannot hire any more seniors.
+-- Keep hiring the juniors with the smallest salary until you cannot hire any more juniors.
+-- Write an SQL query to find the hired seniors and junior under the mentioned criteria.
+
+-- SQL query to create Table and insert data
+
+create table candidates (
+emp_id int,
+experience varchar(20),
+salary int
+);
+insert into candidates values
+(1,'Junior',10000),
+(2,'Junior',15000),
+(3,'Junior',40000),
+(4,'Senior',16000),
+(5,'Senior',20000),
+(6,'Senior',50000);
+
+-- Solution --
+
+WITH cte AS
+(SELECT *, 
+SUM(salary) OVER (PARTITION BY experience order by salary asc) as run_sum 
+FROM candidates),
+seniors AS
+(SELECT experience, salary FROM cte WHERE experience = "Senior" and run_sum <= 70000)
+SELECT experience, salary FROM cte WHERE experience = "Junior" and run_sum <= (SELECT sum(salary) FROM seniors)
+UNION ALL
+SELECT * FROM seniors;
