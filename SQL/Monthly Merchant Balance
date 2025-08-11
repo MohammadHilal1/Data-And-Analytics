@@ -1,0 +1,41 @@
+-- Write a query to print the cummulative balance of merchant at the end of each day
+-- with the total balance reset back to zero at the end of the month
+-- Output the transaction date and cummulative balance
+
+-- SQL query to create table and insert data
+
+CREATE TABLE transactions (
+    transaction_id INT PRIMARY KEY,
+    type VARCHAR(20),
+    amount DECIMAL(10,2),
+    transaction_date DATETIME
+);
+
+INSERT INTO transactions (transaction_id, type, amount, transaction_date) VALUES
+(88213, 'deposit', 120.00, '2022-08-05 09:30:00'),
+(99451, 'withdrawal', 60.50, '2022-08-06 14:15:00'),
+(66512, 'deposit', 250.75, '2022-08-10 11:45:00'),
+(77341, 'withdrawal', 30.00, '2022-08-12 16:20:00'),
+(88621, 'deposit', 90.10, '2022-08-15 10:05:00'),
+(91523, 'deposit', 140.00, '2022-09-01 10:00:00'),
+(73561, 'withdrawal', 50.00, '2022-09-02 12:45:00'),
+(81234, 'deposit', 320.50, '2022-09-05 09:15:00'),
+(99812, 'withdrawal', 110.00, '2022-09-06 13:30:00'),
+(77411, 'deposit', 85.75, '2022-09-10 15:40:00'),
+(66125, 'deposit', 200.00, '2022-10-03 10:00:00'),
+(54221, 'withdrawal', 80.50, '2022-10-04 11:20:00'),
+(88314, 'deposit', 150.25, '2022-10-07 09:50:00'),
+
+
+-- Solution --
+WITH cte AS
+(SELECT date(transaction_date) AS transaction_date , 
+SUM(CASE WHEN type = "withdrawal" THEN amount * -1 ELSE amount END)  AS amount
+FROM transactions
+GROUP BY date(transaction_date)
+ORDER BY date(transaction_date))
+SELECT *,
+SUM(amount) OVER (Partition BY Year(transaction_date), Month(transaction_date) ORDER BY transaction_date) AS cum_sum
+FROM cte;
+(99877, 'withdrawal', 40.00, '2022-10-08 16:10:00'),
+(77145, 'deposit', 60.90, '2022-10-10 08:30:00');
