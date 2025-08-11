@@ -1,0 +1,44 @@
+-- Write a query to determin if two Airbnb rentals have the same exact amenities offered
+
+-- SQL query to create table and insert data
+
+CREATE TABLE rental_amenities (
+    rental_id INT,
+    amenity VARCHAR(50)
+);
+
+INSERT INTO rental_amenities (rental_id, amenity) VALUES
+-- Given data
+(123, 'pool'),
+(123, 'kitchen'),
+(234, 'hot tub'),
+(234, 'fireplace'),
+(345, 'kitchen'),
+(345, 'pool'),
+(456, 'pool'),
+(456, 'garden'),
+(567, 'balcony'),
+(567, 'pool'),
+(678, 'kitchen'),
+(678, 'fireplace'),
+(789, 'hot tub'),
+(789, 'sauna'),
+(890, 'pool'),
+(890, 'garden'),
+(901, 'balcony'),
+(901, 'garden');
+
+-- Solution --
+
+WITH cte AS
+(SELECT rental_id, 
+group_concat(amenity ORDER BY amenity) AS amenities
+FROM rental_amenities
+GROUP BY rental_id)
+SELECT SUM(cnt) AS matching_amenities
+FROM
+(SELECT amenities,
+count(amenities) AS cnt
+FROM cte
+GROUP BY amenities
+HAVING count(amenities) > 1) A;
