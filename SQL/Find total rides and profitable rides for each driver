@@ -1,0 +1,22 @@
+-- Write a query to print total rides and profit rides for each driver
+-- profit ride is when the current location of the ride is same as start location on next ride
+
+-- SQL query to create table and insert data
+
+CREATE TABLE drivers(id VARCHAR(10), start_time TIME, end_time TIME, start_loc VARCHAR(10), end_loc VARCHAR(10));
+INSERT INTO drivers VALUES('dri_1', '09:00', '09:30', 'a','b'),('dri_1', '09:30', '10:30', 'b','c'),('dri_1','11:00','11:30', 'd','e');
+INSERT INTOdrivers VALUES('dri_1', '12:00', '12:30', 'f','g'),('dri_1', '13:30', '14:30', 'c','h');
+INSERT INTO drivers VALUES('dri_2', '12:15', '12:30', 'f','g'),('dri_2', '13:30', '14:30', 'c','h');
+
+-- Solution --
+
+WITH cte AS
+(SELECT *, 
+LEAD(start_loc) OVER (PARTITION BY id) AS next_start,
+COUNT(1) OVER (PARTITION BY id) AS total_rides
+FROM drivers)
+SELECT id, 
+MAX(total_rides) AS total_rides,
+SUM(CASE WHEN end_loc = next_start THEN 1 ELSE 0 END) AS profit_rides
+FROM cte
+GROUP BY id;
