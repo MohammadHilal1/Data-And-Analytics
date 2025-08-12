@@ -1,0 +1,39 @@
+-- We need to identify daily changes (inserts and deletes) in a real-time ORDERS table by comparing it with its nightly snapshot ORDER_COPY. 
+-- Since no timestamps are available, the solution must efficiently detect:
+-- New Inserts → Records present in ORDERS but missing in ORDER_COPY.
+-- Deletes → Records present in ORDER_COPY but missing in ORDERS.
+-- The query should return the ORDER_ID and a flag ('I' for insert, 'D' for delete) to indicate the type of change.
+
+-- SQL query to create table and insert data
+
+CREATE TABLE tbl_orders (
+order_id INTEGER PRIMARY KEY,
+order_date DATE
+);
+INSERT INTO tbl_orders
+VALUES (1,'2022-10-21'),(2,'2022-10-22'),
+(3,'2022-10-25'),(4,'2022-10-25');
+
+CREATE TABLE tbl_orders_copy AS SELECT * FROM tbl_orders;
+
+-- Solution --
+
+WITH cte AS
+(SELECT tbl_orders.order_id AS t_order_id, 
+tbl_orders.order_date AS t_order_date, 
+tbl_orders_copy.order_id AS tc_order_id, 
+tbl_orders_copy.order_date AS tc_order_date 
+FROM tbl_orders 
+LEFT JOIN tbl_orders_copy 
+ON tbl_orders.order_id = tbl_orders_copy.order_id
+UNION
+SELECT tbl_orders.order_id AS t_order_id, 
+tbl_orders.order_date AS t_order_date, 
+tbl_orders_copy.order_id AS tc_order_id, 
+tbl_orders_copy.order_date AS tc_order_date  FROM tbl_orders
+RIGHT JOIN tbl_orders_copy
+ON tbl_orders.order_id= tbl_orders_copy.order_id)
+SELECT CASE wHEN t_order_id IS NULL THEN tc_order_id ELSE t_order_id END AS order_id, status FROM
+(SELECT t_order_id, tc_order_id,
+CASE WHEN tc_order_id IS NULL THEN 'I' ELSE 'D' END AS status FROM cte
+WHERE t_order_id IS NULL OR tc_order_id IS NULL) A;
