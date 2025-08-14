@@ -1,0 +1,42 @@
+-- Write sql to find all couples of trade for same stock that happened in the range of 10 seconds
+-- and having price difference by more than 10%
+-- Final result should also list the price difference percentage between the two trade
+
+-- SQL query to create table and insert data
+
+Create Table Trade_tbl(
+TRADE_ID varchar(20),
+Trade_Timestamp time,
+Trade_Stock varchar(20),
+Quantity int,
+Price Float
+);
+
+Insert into Trade_tbl Values('TRADE1','10:01:05','ITJunction4All',100,20);
+Insert into Trade_tbl Values('TRADE2','10:01:06','ITJunction4All',20,15);
+Insert into Trade_tbl Values('TRADE3','10:01:08','ITJunction4All',150,30);
+Insert into Trade_tbl Values('TRADE4','10:01:09','ITJunction4All',300,32);
+Insert into Trade_tbl Values('TRADE5','10:10:00','ITJunction4All',-100,19);
+Insert into Trade_tbl Values('TRADE6','10:10:01','ITJunction4All',-300,19);
+
+-- Solution --
+
+WITH cte AS
+(SELECT t1.TRADE_ID AS first_trade, 
+t2.TRADE_ID AS second_trade,
+t1.Price AS first_trade_price,
+t2.price AS second_trade_price,
+t1.Trade_Timestamp,
+SECOND(TIMEDIFF(t1.Trade_Timestamp, t2.Trade_Timestamp)) AS time_diff FROM Trade_tbl t1
+JOIN Trade_tbl t2
+ON t1.Trade_Stock = t2.Trade_Stock AND
+SECOND(TIMEDIFF(t1.Trade_Timestamp, t2.Trade_Timestamp)) <= 10 AND
+abs(t2.Price - t1.Price) >= (t1.Price * .1) AND 
+t1.trade_timestamp < t2.trade_timestamp)
+SELECT first_trade,
+second_trade,
+first_trade_price,
+second_trade_price, 
+ABS(ROUND(((first_trade_price - second_trade_price)/first_trade_price) * 100, 2)) AS percent_diff 
+FROM cte
+ORDER by Trade_Timestamp;
