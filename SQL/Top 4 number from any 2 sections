@@ -1,0 +1,29 @@
+--  we have a table which stores data of multiple sections. every section has 3 numbers
+-- we have to find top 4 numbers from any 2 sections(2 numbers each) whose addition should be maximum
+-- so in this case we will choose section b where we have 19(10+9) then we need to choose either C or D
+-- because both has sum of 18 but in D we have 10 which is big from 9 so we will give priority to D.
+
+-- Query to create table and insert data
+
+create table section_data
+(
+section varchar(5),
+number integer
+);
+insert into section_data
+values ('A',5),('A',7),('A',10) ,('B',7),('B',9),('B',10) ,('C',9),('C',7),('C',9) ,('D',10),('D',3),('D',8);
+
+-- Solution --
+
+WITH cte AS
+(SELECT *,
+ROW_NUMBER() OVER (PARTITION BY section ORDER BY number DESC) AS rn
+FROM section_data),
+cte1 AS
+(SELECT *, 
+SUM(number) OVER (PARTITION BY section) AS numbers_sum,
+MAX(number) OVER (PARTITION BY section) AS maximum FROM cte
+WHERE rn < 3),
+cte2 AS
+(SELECT *, dense_rank() OVER (ORDER By numbers_sum DESC, maximum DESC) AS rnk FROM cte1)
+SELECT * FROM cte2 WHERE rnk <= 2;
