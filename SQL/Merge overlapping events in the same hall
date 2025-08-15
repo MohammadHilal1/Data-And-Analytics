@@ -1,0 +1,34 @@
+-- Merge obverlapping events in the same hall
+
+-- SQL query to create table and insert data
+create table hall_events
+(
+hall_id integer,
+start_date date,
+end_date date
+);
+insert into hall_events values 
+(1,'2023-01-13','2023-01-14')
+,(1,'2023-01-14','2023-01-17')
+,(1,'2023-01-15','2023-01-17')
+,(1,'2023-01-18','2023-01-25')
+,(2,'2022-12-09','2022-12-23')
+,(2,'2022-12-13','2022-12-17')
+,(3,'2022-12-01','2023-01-30');
+
+
+-- Solution -- 
+create view view_1 AS
+(SELECT *, ROW_NUMBER() OVER (ORDER BY hall_id, start_date) AS event_id FROM hall_events);
+
+WITH RECURSIVE r_cte AS
+(SELECT hall_id, start_date, end_date, event_id, 1 as flag FROM view_1 WHERE event_id = 1
+UNION ALL 
+SELECT view_1.hall_id, view_1.start_date, view_1.end_date, view_1.event_id,
+CASE WHEN view_1.hall_id = r_cte.hall_id AND 
+(view_1.start_date BETWEEN r_cte.start_date AND r_cte.end_date
+OR r_cte.start_date BETWEEN view_1.start_date AND view_1.end_date) THEN 0 ELSE 1 END + flag AS flag
+FROM r_cte INNER JOIN view_1 
+ON r_cte.event_id+1 = view_1.event_id)
+SELECT hall_id, flag, MIN(start_date) AS start_Date, MAX(end_date) AS end_date FROM r_cte
+GROUP By hall_id, flag;
