@@ -1,0 +1,51 @@
+-- Find the departments with the average salary less than the companys average salary but there is a constraint 
+-- When comparing the departments average salary with the company average salary, the departments must not be included in the companys average salary
+
+-- SQL query tto create table and insertd data
+
+create table emp(
+emp_id int,
+emp_name varchar(20),
+department_id int,
+salary int,
+manager_id int,
+emp_age int);
+
+insert into emp
+values
+(1, 'Ankit', 100,10000, 4, 39);
+insert into emp
+values (2, 'Mohit', 100, 15000, 5, 48);
+insert into emp
+values (3, 'Vikas', 100, 10000,4,37);
+insert into emp
+values (4, 'Rohit', 100, 5000, 2, 16);
+insert into emp
+values (5, 'Mudit', 200, 12000, 6,55);
+insert into emp
+values (6, 'Agam', 200, 12000,2, 14);
+insert into emp
+values (7, 'Sanjay', 200, 9000, 2,13);
+insert into emp
+values (8, 'Ashish', 200,5000,2,12);
+insert into emp
+values (9, 'Mukesh',300,6000,6,51);
+insert into emp
+values (10, 'Rakesh',300,7000,6,50);
+
+-- Solution --
+
+WITH cte AS
+(SELECT department_id, 
+AVG(salary) AS dept_avg,
+COUNT(*) AS total_emp,
+SUM(salary) AS salary_total
+FROM emp
+GROUP BY department_id),
+cte1 AS
+(SELECT c1.department_id, c1.dept_avg, c2.department_id as dept_id, c2.total_emp, c2.salary_total FROM cte c1 
+INNER JOIN cte c2 ON c1.department_id != c2.department_id)
+SELECT department_id, dept_avg, SUM(salary_total)/SUM(total_emp) AS company_avg_sal
+FROM cte1
+GROUP BY department_id, dept_avg
+HAVING dept_avg < SUM(salary_total)/SUM(total_emp);
