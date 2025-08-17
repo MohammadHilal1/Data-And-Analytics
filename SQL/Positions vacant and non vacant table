@@ -1,0 +1,64 @@
+-- Given two tables job_employees contains the details of the employees job and the job_positions
+-- which contains the details of the job positions in the company
+-- You need to create a summary table that shows the job positions filled by the employees and the vacant positions in the company
+
+-- SQL query to create table and insert data
+
+create table job_positions (id  int,
+title varchar(100),
+group_no varchar(10),
+levels varchar(10),     
+payscale int, 
+totalpost int );
+insert into job_positions values (1, 'General manager', 'A', 'l-15', 10000, 1); 
+insert into job_positions values (2, 'Manager', 'B', 'l-14', 9000, 5); 
+insert into job_positions values (3, 'Asst. Manager', 'C', 'l-13', 8000, 10);  
+
+create table job_employees ( id  int, 
+name varchar(100),     
+position_id  int 
+);  
+insert into job_employees values (1, 'John Smith', 1); 
+insert into job_employees values (2, 'Jane Doe', 2);
+insert into job_employees values (3, 'Michael Brown', 2);
+insert into job_employees values (4, 'Emily Johnson', 2); 
+insert into job_employees values (5, 'William Lee', 3); 
+insert into job_employees values (6, 'Jessica Clark', 3); 
+insert into job_employees values (7, 'Christopher Harris', 3);
+insert into job_employees values (8, 'Olivia Wilson', 3);
+insert into job_employees values (9, 'Daniel Martinez', 3);
+insert into job_employees values (10, 'Sophia Miller', 3);
+
+-- Solution using recursive cte --
+
+with RECURSIVE cte AS
+(
+	SELECT *, 1 as rn FROM job_positions
+    UNION ALL
+    SELECT id, title, group_no, levels, payscale, totalpost, rn + 1 FROM cte WHERE 
+    rn + 1 <= totalpost
+),
+cte1 AS
+(
+SELECT *, ROW_NUMBER() OVER (PARTITION BY position_id) AS rn FROM job_employees
+)
+SELECT cte.*, COALESCE(cte1.name, "vacant") as name FROM cte LEFT JOIN cte1
+ON cte.id = cte1.position_id and cte.rn = cte1.rn
+ORDER BY cte.id, cte.rn;
+
+-- Solution using join -- 
+-- First we need to create a table with unique row numbers. Number of rows will be equal to the total positions in the job positions table
+-- and after that we will join it with the job positions table
+-- and after that we will move towards acheiving the desired output
+
+WITH cte AS
+(SELECT job_positions.id, title, group_no, levels, payscale, totalpost, row_numbers.id AS rn FROM job_positions 
+join row_numbers
+ON row_numbers.id <= job_positions.totalpost),
+cte1 AS
+(
+	SELECT name, position_id, ROW_NUMBER() OVER (PARTITION BY position_id) AS rn FROM job_employees
+)
+SELECT cte.*, COALESCE(cte1.name, "vacant") AS name FROM cte 
+LEFT JOIn cte1 ON
+cte.id = cte1.position_id AND cte1.rn = cte.rn;
