@@ -1,0 +1,44 @@
+-- Given orders table and return table you need to find the city that has no return order
+
+-- SQL query to create table and insert data
+
+create table namaste_orders
+(
+order_id int,
+city varchar(10),
+sales int
+);
+
+create table namaste_returns
+(
+order_id int,
+return_reason varchar(20)
+);
+
+insert into namaste_orders
+values(1, 'Mysore' , 100),(2, 'Mysore' , 200),(3, 'Bangalore' , 250),(4, 'Bangalore' , 150)
+,(5, 'Mumbai' , 300),(6, 'Mumbai' , 500),(7, 'Mumbai' , 800);
+
+insert into namaste_returns values
+(3,'wrong item'),(6,'bad quality'),(7,'wrong item');
+
+-- Solution 
+
+-- Using join and aggregation
+
+SELECT namaste_orders.city
+FROM namaste_orders 
+left join namaste_returns ON namaste_returns.order_id = namaste_orders.order_id
+GROUP BY namaste_orders.city
+HAVING count(namaste_returns.order_id) = 0;
+
+-- using advanced SQL
+
+SELECT DISTINCT city FROM namaste_orders 
+WHERE city NOT IN (
+SELECT DISTINCT city FROM namaste_orders 
+WHERE order_id IN (
+	SELECT order_id FROM namaste_returns
+	)
+);
+
