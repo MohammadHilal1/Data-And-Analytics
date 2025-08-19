@@ -1,0 +1,45 @@
+-- Create a calendar table to perform time series analaysis
+
+-- Solution
+-- Create Table query
+CREATE TABLE calendar_dim(id int PRIMARY KEY,
+cal_date date,
+cal_year CHAR(4),
+day_of_year SMALLINT,
+cal_quarter TINYINT,
+cal_month TINYINT,
+month_name VARCHAR(11),
+day_of_month TINYINT,
+week_of_month TINYINT,
+week_day TINYINT,
+day_name VARCHAR(11)
+);
+
+-- Insert records into calendar dim table
+INSERT INTO calendar_dim (
+    id, cal_date, cal_year, day_of_year, cal_quarter, 
+    cal_month, month_name, day_of_month, week_of_month, week_day, day_name
+)
+-- Generate date rows using recrusive cte and then generate the rdesired result set using SELECT statement and further it will be inserted into the calendar dim table
+WITH RECURSIVE cte AS
+(
+SELECT CAST("2020-01-01" AS date) AS cal_date
+UNION ALL
+SELECT date_add(cal_date, INTERVAL 1 day)
+FROM cte
+WHERE cal_date <= CAST("2021-12-30" AS date)
+)
+SELECT row_number() OVER (ORDER BY cal_date) AS id, 
+cal_date,
+YEAR(cal_date) AS cal_year,
+DAYOFYEAR(cal_date) AS day_of_year,
+QUARTER(cal_date) AS cal_quarter,
+MONTH(cal_date) AS cal_month,
+MONTHNAME(cal_date) AS month_name,
+DAYOFMONTH(cal_date) AS day_of_month,
+FLOOR((DAYOFMONTH(cal_date)-1)/7)+1 AS week_of_month,
+WEEKDAY(cal_date) AS week_day,
+DAYNAME(cal_date) AS day_name
+FROM cte;
+
+SELECT * FROM calendar_dim;
