@@ -1,0 +1,32 @@
+-- Given sku table find the price at start of the month and the difference
+
+-- SQL query to create table and insert data
+
+create table sku 
+(
+sku_id int,
+price_date date ,
+price int
+);
+insert into sku values 
+(1,'2023-01-01',10)
+,(1,'2023-02-15',15)
+,(1,'2023-03-03',18)
+,(1,'2023-03-27',15)
+,(1,'2023-04-06',20);
+
+-- Solution --
+
+WITH cte AS
+(SELECT *, ROW_NUMBER() OVER (PARTITION BY sku_id, YEAR(price_date), MONTH(price_date) ORDER BY price_date DESC) AS rn
+FROM sku),
+cte1 AS
+(
+	SELECT sku_id, price_date, price FROM sku WHERE DAY(price_date) = 1
+    UNION 
+	SELECT sku_id, date_format(date_add(price_date,INTERVAL 1 MONTH), "%Y-%m-01") AS price_date,
+    price
+    FROM cte WHERE rn=1
+    ORDER BY price_date
+)
+SELECT *, price - LAG(price,1,price) OVER (ORDER BY price_date) AS diff FROM cte1;
