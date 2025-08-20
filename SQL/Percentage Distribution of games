@@ -1,0 +1,60 @@
+-- analyze player interactions within games recorded in the user_interactions table.
+-- Each record in this table contains information about a specific game_id, the user_id, and the type of interaction (interaction_type).
+-- The goal is to classify each game based on the nature of interactions among the players:
+-- No interaction – if there are no interaction records for the game.
+-- One-sided interaction – if interactions exist but all messages come from only one player.
+-- Both-sided interaction without custom typed messages – if interactions exist from more than one player but none of them sent a "custom_typed" message.
+-- Both-sided interaction with custom typed messages – if interactions exist from more than one player and at least one of them sent a "custom_typed" message.
+-- After classifying each game, we need to calculate the percentage distribution of games across these categories to understand how players interact in different games.
+
+-- Sql query to create table and insert data
+
+CREATE TABLE user_interactions (
+    user_id varchar(10),
+    event varchar(15),
+    event_date DATE,
+    interaction_type varchar(15),
+    game_id varchar(10),
+    event_time TIME
+);
+
+-- Insert the data
+INSERT INTO user_interactions 
+VALUES
+('abc', 'game_start', '2024-01-01', null, 'ab0000', '10:00:00'),
+('def', 'game_start', '2024-01-01', null, 'ab0000', '10:00:00'),
+('def', 'send_emoji', '2024-01-01', 'emoji1', 'ab0000', '10:03:20'),
+('def', 'send_message', '2024-01-01', 'preloaded_quick', 'ab0000', '10:03:49'),
+('abc', 'send_gift', '2024-01-01', 'gift1', 'ab0000', '10:04:40'),
+('abc', 'game_end', '2024-01-01', NULL, 'ab0000', '10:10:00'),
+('def', 'game_end', '2024-01-01', NULL, 'ab0000', '10:10:00'),
+('abc', 'game_start', '2024-01-01', null, 'ab9999', '10:00:00'),
+('def', 'game_start', '2024-01-01', null, 'ab9999', '10:00:00'),
+('abc', 'send_message', '2024-01-01', 'custom_typed', 'ab9999', '10:02:43'),
+('abc', 'send_gift', '2024-01-01', 'gift1', 'ab9999', '10:04:40'),
+('abc', 'game_end', '2024-01-01', NULL, 'ab9999', '10:10:00'),
+('def', 'game_end', '2024-01-01', NULL, 'ab9999', '10:10:00'),
+('abc', 'game_start', '2024-01-01', null, 'ab1111', '10:00:00'),
+('def', 'game_start', '2024-01-01', null, 'ab1111', '10:00:00'),
+('abc', 'game_end', '2024-01-01', NULL, 'ab1111', '10:10:00'),
+('def', 'game_end', '2024-01-01', NULL, 'ab1111', '10:10:00'),
+('abc', 'game_start', '2024-01-01', null, 'ab1234', '10:00:00'),
+('def', 'game_start', '2024-01-01', null, 'ab1234', '10:00:00'),
+('abc', 'send_message', '2024-01-01', 'custom_typed', 'ab1234', '10:02:43'),
+('def', 'send_emoji', '2024-01-01', 'emoji1', 'ab1234', '10:03:20'),
+('def', 'send_message', '2024-01-01', 'preloaded_quick', 'ab1234', '10:03:49'),
+('abc', 'send_gift', '2024-01-01', 'gift1', 'ab1234', '10:04:40'),
+('abc', 'game_end', '2024-01-01', NULL, 'ab1234', '10:10:00'),
+('def', 'game_end', '2024-01-01', NULL, 'ab1234', '10:10:00');
+
+-- Solution --
+
+WITH cte AS
+(SELECT game_id, CASE WHEN count(interaction_type) = 0 THEN "No interaction"
+WHEN count(DISTINCT CASE WHEN interaction_type IS NOT NULL THEN user_id END) = 1 THEN "One sided interaction"
+WHEN count(DISTINCT CASE WHEN interaction_type is not null THEN user_id END) > 1 AND count(DISTINCT CASE WHEN interaction_type = "custom_typed" THEN user_id END) = 0 THEN "Both sided interaction without custom typed messages" 
+WHEN count(DISTINCT CASE WHEN interaction_type is not null THEN user_id END) > 1 AND count(DISTINCT CASE WHEN interaction_type = "custom_typed" THEN user_id END) >= 1 THEN "Both sided interaction with custom typed messages at least one player" END AS game_type
+FROM user_interactions
+GROUP BY game_id)
+SELECT game_id, round(count(*)/count(*) OVER(), 2) * 100 as percent_dist FROM cte
+GROUP BY game_id;
