@@ -1,0 +1,20 @@
+-- Find the first name last name and middle name of the customer
+
+-- SQL to create table and insert data
+
+create table customers  (customer_name varchar(30));
+insert into customers values ('Ankit Bansal')
+,('Vishal Pratap Singh')
+,('Zainab Hilal Fatima')
+,('Michael'); 
+
+-- Solution --
+
+SELECT *, 
+CASE WHEN length(left(customer_name, Position(" " IN customer_name))) = 0 THEN customer_name 
+ELSE left(customer_name, Position(" " IN customer_name)) END AS first_name,
+CASE WHEN length(SUBSTR(customer_name, Position(" " IN customer_name), LENGTH(customer_name) - (Position(" " IN customer_name) + POSITION(" " IN reverse(customer_name))-1))) = 0 THEN NULL
+ELSE SUBSTR(customer_name, Position(" " IN customer_name), LENGTH(customer_name) - (Position(" " IN customer_name) + POSITION(" " IN reverse(customer_name))-1)) END AS middle_name,
+CASE WHEN length(RIGHT(customer_name, POSITION(" " IN reverse(customer_name)))) = 0 THEN NULL 
+ELSE RIGHT(customer_name, POSITION(" " IN reverse(customer_name))) END as last_name
+FROM customers;
