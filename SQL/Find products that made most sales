@@ -1,0 +1,98 @@
+-- Given a orders table having order_id, product, category, sales column
+-- Find the top 5 products that made most sales
+-- Find the top2 product in each category that made most sales
+
+-- SQL query to create table and insert data
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    product VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    sales DECIMAL(10,2) NOT NULL
+);
+
+INSERT INTO orders (product, category, sales) VALUES
+('iPhone 14', 'Electronics', 899.99),
+('Samsung Galaxy S22', 'Electronics', 799.49),
+('Sony WH-1000XM4 Headphones', 'Electronics', 349.99),
+('HP Pavilion Laptop', 'Electronics', 699.00),
+('Dell XPS 13', 'Electronics', 1099.99),
+('Wooden Dining Table', 'Furniture', 450.00),
+('Office Chair', 'Furniture', 120.00),
+('Queen Size Bed', 'Furniture', 850.00),
+('Bookshelf', 'Furniture', 180.00),
+('Sofa Set', 'Furniture', 950.00),
+('Nike Running Shoes', 'Fashion', 120.00),
+('Adidas Hoodie', 'Fashion', 75.50),
+('Levi’s Jeans', 'Fashion', 65.00),
+('Ray-Ban Sunglasses', 'Fashion', 150.00),
+('Gucci Handbag', 'Fashion', 999.00),
+('Python Programming Book', 'Books', 40.00),
+('Data Science Handbook', 'Books', 55.00),
+('Harry Potter Box Set', 'Books', 120.00),
+('Atomic Habits', 'Books', 25.00),
+('Rich Dad Poor Dad', 'Books', 20.00),
+('Apple Watch Series 8', 'Electronics', 399.99),
+('Bluetooth Speaker', 'Electronics', 89.99),
+('Dining Chair', 'Furniture', 75.00),
+('Puma T-Shirt', 'Fashion', 35.00),
+('Think and Grow Rich', 'Books', 18.00),
+('iPhone 14', 'Electronics', 899.99),
+('iPhone 14', 'Electronics', 879.00),
+('Samsung Galaxy S22', 'Electronics', 799.49),
+('Samsung Galaxy S22', 'Electronics', 820.00),
+('Sony WH-1000XM4 Headphones', 'Electronics', 349.99),
+('Sony WH-1000XM4 Headphones', 'Electronics', 330.50),
+('HP Pavilion Laptop', 'Electronics', 699.00),
+('HP Pavilion Laptop', 'Electronics', 715.00),
+('Dell XPS 13', 'Electronics', 1099.99),
+('Dell XPS 13', 'Electronics', 1050.00),
+('Wooden Dining Table', 'Furniture', 450.00),
+('Wooden Dining Table', 'Furniture', 470.00),
+('Office Chair', 'Furniture', 120.00),
+('Office Chair', 'Furniture', 115.00),
+('Queen Size Bed', 'Furniture', 850.00),
+('Queen Size Bed', 'Furniture', 870.00),
+('Bookshelf', 'Furniture', 180.00),
+('Bookshelf', 'Furniture', 190.00),
+('Sofa Set', 'Furniture', 950.00),
+('Sofa Set', 'Furniture', 920.00),
+('Nike Running Shoes', 'Fashion', 120.00),
+('Nike Running Shoes', 'Fashion', 110.00),
+('Adidas Hoodie', 'Fashion', 75.50),
+('Adidas Hoodie', 'Fashion', 78.00),
+('Levi’s Jeans', 'Fashion', 65.00),
+('Levi’s Jeans', 'Fashion', 68.00),
+('Ray-Ban Sunglasses', 'Fashion', 150.00),
+('Ray-Ban Sunglasses', 'Fashion', 140.00),
+('Gucci Handbag', 'Fashion', 999.00),
+('Gucci Handbag', 'Fashion', 980.00),
+('Python Programming Book', 'Books', 40.00),
+('Python Programming Book', 'Books', 42.00),
+('Data Science Handbook', 'Books', 55.00),
+('Data Science Handbook', 'Books', 58.00),
+('Harry Potter Box Set', 'Books', 120.00),
+('Harry Potter Box Set', 'Books', 125.00),
+('Atomic Habits', 'Books', 25.00),
+('Atomic Habits', 'Books', 27.00),
+('Rich Dad Poor Dad', 'Books', 20.00),
+('Rich Dad Poor Dad', 'Books', 22.00);
+
+-- Solution --
+
+-- Find top 5 products by sale
+WITH cte AS
+(SELECT product, sum(sales) AS sales FROM orders
+GROUP BY product)
+SELECT * FROM cte ORDER By sales DESC LIMIT 5;
+
+-- Find top 2 products who made most sales in each category
+WITH cte AS
+(
+	SELECT category, product, SUM(sales) AS sales
+	FROM orders
+    GROUP BY category, product
+),
+cte1 AS
+(SELECT *, RANK() OVER (PARTITION BY category ORDER BY sales DESC) AS rn FROM cte)
+SELECT * FROM cte1 WHERE rn <= 2;
