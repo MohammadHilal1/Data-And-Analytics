@@ -1,0 +1,43 @@
+-- Given employees table with emp_id, emp_name, salary and department columns
+-- Find the top 2 highest paid employees
+-- Find the top 2 highest paid employees in each department
+
+-- SQL query to create table and insert data
+
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY AUTO_INCREMENT,
+    emp_name VARCHAR(50) NOT NULL,
+    salary DECIMAL(10,2) NOT NULL,
+    department VARCHAR(30) NOT NULL
+);
+INSERT INTO employees (emp_name, salary, department) VALUES
+('Alice Johnson', 55000, 'HR'),
+('Bob Smith', 62000, 'Finance'),
+('Charlie Davis', 75000, 'IT'),
+('Diana King', 58000, 'HR'),
+('Edward Brown', 90000, 'IT'),
+('Fiona Clark', 67000, 'Finance'),
+('George Miller', 72000, 'Marketing'),
+('Hannah Wilson', 50000, 'Sales'),
+('Ian Thomas', 82000, 'IT'),
+('Jane Evans', 61000, 'HR'),
+('Kevin White', 78000, 'Finance'),
+('Laura Adams', 53000, 'Sales'),
+('Michael Scott', 95000, 'IT'),
+('Nina Turner', 64000, 'Marketing'),
+('Oliver Harris', 88000, 'Finance'),
+('Paula Green', 56000, 'Sales'),
+('Quentin Brooks', 72000, 'Marketing'),
+('Rachel Young', 61000, 'HR'),
+('Samuel Price', 83000, 'IT'),
+('Tina Lopez', 69000, 'Finance');
+
+-- Find top 2 highest salaried employees
+SELECT * FROM employees
+ORDER BY salary desc
+LIMIT 2;
+
+-- Find top 2 highest salaried employees in each department
+WITH cte AS
+(SELECT *, RANK() OVER (PARTITION BY department ORDER BY salary DESC) as rn FROM employees)
+SELECT * FROM cte WHERE rn <= 2;
