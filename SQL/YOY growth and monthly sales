@@ -1,0 +1,84 @@
+-- A retail company maintains its transactional sales data in the orders_1 table. 
+-- The table records details of each order including the product, category, sales amount, and order date. 
+-- Management wants to analyze sales performance trends over time at both yearly and monthly levels.
+
+-- The tasks are:
+-- Year-over-Year (YoY) Growth Analysis
+-- Calculate the total sales for each year.
+-- Compare the sales with the previous year using LAG() to determine YoY growth.
+-- Express the growth as a percentage change compared to the previous year.
+-- Month-over-Month (MoM) Growth Analysis per Product
+-- For each product, calculate the monthly aggregated sales.
+-- Use LAG() to find the previous month’s sales for the same product.
+-- Identify the latest month of sales for each product.
+-- From these, filter products where sales in the latest month are higher than the previous month, i.e., showing positive MoM growth.
+
+-- SQL query to create table and insert data
+
+CREATE TABLE orders_1 (
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    product VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    sales DECIMAL(10,2) NOT NULL,
+    order_date DATE NOT NULL
+);
+
+INSERT INTO orders_1 (product, category, sales, order_date) VALUES
+('iPhone 14', 'Electronics', 899.99, '2022-01-15'),
+('iPhone 14', 'Electronics', 879.00, '2022-02-20'),
+('Samsung Galaxy S22', 'Electronics', 799.49, '2022-03-10'),
+('Samsung Galaxy S22', 'Electronics', 820.00, '2022-03-25'),
+('Sony WH-1000XM4 Headphones', 'Electronics', 349.99, '2022-05-18'),
+('HP Pavilion Laptop', 'Electronics', 699.00, '2022-07-12'),
+('Wooden Dining Table', 'Furniture', 450.00, '2022-08-03'),
+('Office Chair', 'Furniture', 120.00, '2022-09-21'),
+('Nike Running Shoes', 'Fashion', 120.00, '2022-10-14'),
+('Adidas Hoodie', 'Fashion', 75.50, '2022-11-11'),
+('Python Programming Book', 'Books', 40.00, '2022-12-05'),
+('iPhone 14', 'Electronics', 915.00, '2023-01-10'),
+('Samsung Galaxy S22', 'Electronics', 810.00, '2023-02-16'),
+('Sony WH-1000XM4 Headphones', 'Electronics', 330.50, '2023-03-22'),
+('HP Pavilion Laptop', 'Electronics', 715.00, '2023-04-19'),
+('Dell XPS 13', 'Electronics', 1099.99, '2023-05-25'),
+('Dell XPS 13', 'Electronics', 1050.00, '2023-05-28'),
+('Queen Size Bed', 'Furniture', 850.00, '2023-06-12'),
+('Bookshelf', 'Furniture', 180.00, '2023-07-07'),
+('Sofa Set', 'Furniture', 950.00, '2023-08-23'),
+('Nike Running Shoes', 'Fashion', 115.00, '2023-09-15'),
+('Ray-Ban Sunglasses', 'Fashion', 150.00, '2023-10-04'),
+('Gucci Handbag', 'Fashion', 999.00, '2023-11-18'),
+('Harry Potter Box Set', 'Books', 120.00, '2023-12-09'),
+('Data Science Handbook', 'Books', 55.00, '2023-12-19'),
+('iPhone 14', 'Electronics', 890.00, '2024-01-06'),
+('Samsung Galaxy S22', 'Electronics', 805.00, '2024-02-14'),
+('Sony WH-1000XM4 Headphones', 'Electronics', 340.00, '2024-03-12'),
+('HP Pavilion Laptop', 'Electronics', 725.00, '2024-04-15'),
+('Dell XPS 13', 'Electronics', 1070.00, '2024-05-09'),
+('Wooden Dining Table', 'Furniture', 470.00, '2024-06-21'),
+('Office Chair', 'Furniture', 118.00, '2024-07-10'),
+('Queen Size Bed', 'Furniture', 870.00, '2024-08-16'),
+('Bookshelf', 'Furniture', 190.00, '2024-09-08'),
+('Nike Running Shoes', 'Fashion', 110.00, '2024-10-22'),
+('Adidas Hoodie', 'Fashion', 78.00, '2024-11-03'),
+('Ray-Ban Sunglasses', 'Fashion', 145.00, '2024-11-25'),
+('Gucci Handbag', 'Fashion', 980.00, '2024-12-14'),
+('Atomic Habits', 'Books', 27.00, '2024-12-27'),
+('Rich Dad Poor Dad', 'Books', 22.00, '2024-12-29');
+
+-- Solution --
+WITH cte AS
+(SELECT year(order_date) as year, SUM(sales) as sales FROM orders_1
+GROUP BY year(order_date)),
+cte1 AS
+(SELECT *, LAG(sales, 1, 0) OVER (ORDER BY year) AS prev_year_sales FROM cte)
+SELECT *, CONCAT(CAST(IFNULL(round((sales-prev_year_sales)/prev_year_sales,2) * 100, 0) AS char), "%") as yoy_growth FROM cte1;
+
+WITh cte AS
+(SELECT year(order_date) as year, month(order_date) as month, product, sum(sales) as sales
+FROm orders_1
+GROUP BY year(order_date), month(order_date), product),
+cte1 AS
+(SELECT *, LAG(sales, 1, 0) OVER (PARTITION BY product order by year, month) as prev_month_sales,
+ROW_NUMBER() OVER (PARTITION BY product order by year, month) as rn FROM cte),
+cte2 AS (SELECT *, MAX(rn) OVER (PArtition BY product) as l_rn FROM cte1)
+SELECT * FROM cte2 WHERE rn = l_rn and sales > prev_month_sales;
