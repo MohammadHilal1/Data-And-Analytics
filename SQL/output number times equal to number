@@ -1,0 +1,58 @@
+-- Given a table with column sequence like
+-- 1
+-- 2
+-- 3
+-- 4
+-- 5
+-- Output the result like
+-- 1
+-- 2
+-- 2
+-- 3
+-- 3
+-- 3
+-- 4
+-- 4
+-- 4
+-- 4
+-- 5
+-- 5
+-- 5
+-- 5
+-- 5
+
+-- SQL query to create table and insert data
+
+CREATE TABLE Numbers(
+	number int
+);
+
+INSERT INTO Numbers VALUES(1), (2),(3),(4),(5);
+INSERT INTO Numbers VALUES (9);
+
+-- Solution --
+
+-- Using recursion
+WITH RECURSIVE cte AS
+(
+	SELECT number, 1 as num_counter FROM Numbers
+    UNION ALL
+    SELECT number, num_counter + 1 FROM cte WHERE num_counter + 1 <= number
+)
+SELECT * FROM cte;
+
+-- Using Join
+SELECT id_1.number FROM Numbers id_1 INNER JOIN Numbers id_2 
+ON id_1.number >= id_2.number
+ORDER BY id_1.number;
+
+-- Using recursive CTE and INNER JOIN
+WiTH RECURSIVE cte AS
+(
+	SELECT number FROM numbers WHERE number = 1
+    UNION ALL
+    SELECT number + 1 FROM cte WHERE number < (SELECT MAX(number) FROm numbers)
+)
+SELECT n.number FROM Numbers n JOIN cte
+ON n.number >= cte.number
+ORDER BY n.number;
