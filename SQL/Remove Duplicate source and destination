@@ -1,0 +1,44 @@
+-- Remobe duplicate in case of source, destination and distance are same and keep the first value only
+
+-- SQL query to create table and insert data
+
+CREATE TABLE city_distance
+(
+    distance INT,
+    source VARCHAR(512),
+    destination VARCHAR(512)
+);
+INSERT INTO city_distance(distance, source, destination) VALUES ('100', 'New Delhi', 'Panipat');
+INSERT INTO city_distance(distance, source, destination) VALUES ('200', 'Ambala', 'New Delhi');
+INSERT INTO city_distance(distance, source, destination) VALUES ('150', 'Bangalore', 'Mysore');
+INSERT INTO city_distance(distance, source, destination) VALUES ('150', 'Mysore', 'Bangalore');
+INSERT INTO city_distance(distance, source, destination) VALUES ('250', 'Mumbai', 'Pune');
+INSERT INTO city_distance(distance, source, destination) VALUES ('250', 'Pune', 'Mumbai');
+INSERT INTO city_distance(distance, source, destination) VALUES ('2500', 'Chennai', 'Bhopal');
+INSERT INTO city_distance(distance, source, destination) VALUES ('2500', 'Bhopal', 'Chennai');
+INSERT INTO city_distance(distance, source, destination) VALUES ('60', 'Tirupati', 'Tirumala');
+INSERT INTO city_distance(distance, source, destination) VALUES ('80', 'Tirumala', 'Tirupati');
+
+-- solution --
+
+-- This solution does not guarantee to return first duplicate
+
+SELECT * FROM city_distance cd 
+LEFT JOIN city_distance cd_1 
+ON cd.source = cd_1.destination AND cd.destination = cd_1.source
+WHERE cd_1.source IS NULL OR cd.distance != cd_1.distance OR cd.source < cd_1.destination;
+
+-- This solution guarantee to return firt dupicate
+
+WITH cte AS
+(SELECT * , CASE WHEN source < destination THEN source ELSE destination END AS city1,
+CASE WHEN source < destination THEN destination ELSE source END AS city2 FROM city_distance),
+cte1 AS
+(SELECT *, COUNT(*) OVER (PARTITION BY city1, city2, distance) AS cnt FROM cte),
+cte2 AS
+(SELECT distance, source, destination, ROW_NUMBER() OVER () As rn FROM cte1)
+
+SELECT cd.distance, cd.source, cd.destination FROM cte2 cd 
+LEFT JOIN cte2 cd_1 
+ON cd.source = cd_1.destination AND cd.destination = cd_1.source
+WHERE cd_1.source IS NULL OR cd.distance != cd_1.distance OR cd.rn < cd_1.rn;
