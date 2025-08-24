@@ -1,0 +1,51 @@
+-- A table named stock has supplier_id, product_id, order_quantity, record_date
+-- Write a SQL query to find out supplier_id, product_id, start_date of record_date for which stock quantity is less than 50
+-- for 2 or more consecutive days
+
+-- SQL query to create table and insert data
+CREATE TABLE stock (
+    supplier_id INT,
+    product_id INT,
+    stock_quantity INT,
+    record_date DATE
+);
+
+-- Insert the data
+INSERT INTO stock (supplier_id, product_id, stock_quantity, record_date)
+VALUES
+    (1, 1, 60, '2022-01-01'),
+    (1, 1, 40, '2022-01-02'),
+    (1, 1, 35, '2022-01-03'),
+    (1, 1, 45, '2022-01-04'),
+ (1, 1, 51, '2022-01-06'),
+ (1, 1, 55, '2022-01-09'),
+ (1, 1, 25, '2022-01-10'),
+    (1, 1, 48, '2022-01-11'),
+ (1, 1, 45, '2022-01-15'),
+    (1, 1, 38, '2022-01-16'),
+    (1, 2, 45, '2022-01-08'),
+    (1, 2, 40, '2022-01-09'),
+    (2, 1, 45, '2022-01-06'),
+    (2, 1, 55, '2022-01-07'),
+    (2, 2, 45, '2022-01-08'),
+ (2, 2, 48, '2022-01-09'),
+    (2, 2, 35, '2022-01-10'),
+ (2, 2, 52, '2022-01-15'),
+    (2, 2, 23, '2022-01-16');
+
+-- Solution --
+
+WITH cte AS
+(SELECT *, DAY(record_date) AS day, 
+ROW_NUMBER() OVER (PARTITION BY supplier_id, product_id ORDER BY DAY(record_date)) AS rn,
+CAST(ROW_NUMBER() OVER (PARTITION BY supplier_id, product_id ORDER BY DAY(record_date)) AS SIGNED) - CAST(DAY(record_date) AS SIGNED) AS diff FROM stock
+WHERE stock_quantity < 50),
+cte2 AS
+(SELECT supplier_id, 
+product_id, 
+stock_quantity, 
+record_date,
+diff, ROW_NUMBER() OVER (PARTITION BY supplier_id, product_id, diff ORDER BY record_date ASC) AS rn,
+count(rn) OVER (PARTITION BY supplier_id, product_id, diff) AS cnt
+FROM cte ORDER BY supplier_id, product_id, record_date)
+SELECT supplier_id, product_id, record_date AS start_date FROM cte2 WHERE cnt >= 2 AND rn = 1;
