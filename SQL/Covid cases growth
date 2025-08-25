@@ -1,0 +1,40 @@
+-- Calculate the percentage increase in covid cases each month versus cummulative cases as of the prior months
+-- Return the month number and the percentage increase rounded near to one decimal order the result by month.
+
+-- SQL query to create table andinsert data
+
+CREATE TABLE covid_cases (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    record_date DATE NOT NULL,
+    cases_count INT NOT NULL
+);
+
+INSERT INTO covid_cases (record_date, cases_count) VALUES
+('2021-01-01', 100), ('2021-01-02', 120), ('2021-01-03', 130),
+('2021-01-15', 200), ('2021-01-25', 150),
+
+('2021-02-01', 220), ('2021-02-05', 180), ('2021-02-12', 160),
+('2021-02-20', 140), ('2021-02-28', 200),
+
+('2021-03-03', 250), ('2021-03-10', 270), ('2021-03-18', 300),
+('2021-03-25', 280), ('2021-03-30', 310),
+
+('2021-04-02', 400), ('2021-04-08', 420), ('2021-04-15', 390),
+('2021-04-20', 450), ('2021-04-28', 480),
+
+('2021-05-05', 500), ('2021-05-12', 520), ('2021-05-19', 510),
+('2021-05-25', 530), ('2021-05-31', 550);
+
+-- Solution --
+
+WITH cte AS
+(SELECT MONTH(record_date) AS month, 
+SUM(cases_count) AS cases
+FROM covid_cases
+GROUP BY MONTH(record_date)
+ORDER BY MONTH(record_date)),
+cte1 AS
+(SELECT *, IFNULL(SUM(cases) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING ), 0) AS cum_sum FROM cte),
+cte2 AS
+(SELECT month, cases, CONCAT(CAST(ROUND(IFNULL(cases/cum_sum * 100, 0), 0) AS char), "%") AS increase FROM cte1)
+SELECT * FROM cte2;
