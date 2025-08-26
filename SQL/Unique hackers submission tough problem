@@ -1,0 +1,4 @@
+-- Write a query to print total number of unique hackers who made atleast 1 submission each and
+-- find the hacker_id who made most submission on each day
+-- If more than one such hacker has a maximum number of submissions print the lowest hacker_id
+-- The query hould print this information for each day of the contest sorted by the date
