@@ -21,3 +21,11 @@ SELECT fp.user_id, fp.page_id
 FROM friends_pages fp 
 LEFT JOIN user_pages up ON fp.user_id = up.user_id AND fp.page_id = up.page_id
 WHERE up.user_id IS NULL;
+
+-- Solution 2 --
+SELECT DISTINCT f.user_id, fp.page_id FROM
+friends f INNER JOIN likes fp
+ON f.friend_id = fp.user_id
+LEFT JOIN likes up
+ON f.user_id = up.user_id AND fp.page_id = up.page_id
+WHERE up.user_id IS NULL;
