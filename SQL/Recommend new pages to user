@@ -1,0 +1,23 @@
+-- We have two tables:
+-- friends – stores friendship relations between users (user_id, friend_id).
+-- likes – stores which pages users have liked (user_id, page_id).
+-- We want to recommend new pages to users based on the pages liked by their friends.
+-- Rules:
+-- A user should not be recommended a page they already like.
+-- Only pages liked by the user’s friends are considered.
+-- Objective:
+-- Write a query to return a list of (user_id, page_id) pairs representing the pages that should be recommended to each user.
+
+-- Solution 1 --
+WITH user_pages AS
+(SELECT DISTINCT user_id, 
+page_id  
+FROM likes),
+friends_pages AS
+(SELECT DISTINCT f.user_id, f.friend_id, l.page_id
+FROM friends f INNER JOIN likes l
+ON f.friend_id = l.user_id)
+SELECT fp.user_id, fp.page_id
+FROM friends_pages fp 
+LEFT JOIN user_pages up ON fp.user_id = up.user_id AND fp.page_id = up.page_id
+WHERE up.user_id IS NULL;
