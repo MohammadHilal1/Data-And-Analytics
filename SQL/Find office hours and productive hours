@@ -35,3 +35,18 @@ TIMESTAMPDIFF(HOUR, MIN(activity_time), MAX(logout_time)) AS office_hours,
 SUM(TIMESTAMPDIFF(HOUR, activity_time, logout_time)) As productive_hours
 FROM cte WHERE activity_type = "login"
 GROUP BY employee_id, activity_day;
+
+WITH cte AS
+(SELECT *, 
+CAST(activity_time AS date) AS activity_day, 
+LEAD(activity_time,1) OVER (PARTITION BY employee_id, CAST(activity_time AS date) ORDER BY activity_time aSC) as logout_time FROM swipe),
+cte1 AS
+(SELECT *, MIN(activity_time) OVER (PARTITION BY employee_id, activity_day) AS first_login,
+MAX(logout_time) OVER (PARTITION BY employee_id, activity_day) AS last_logout,
+CAST((logout_time - activity_time) AS time) as productive_hours FROM cte WHERE activity_type = "login")
+SELECT employee_id, 
+activity_day, 
+CAST((MAX(last_logout) - MAX(first_login)) as time) as office_hours,
+CAST(SUM(productive_hours) AS time) as productive_hours
+FROM cte1 
+GROUP BY employee_id, activity_day;
