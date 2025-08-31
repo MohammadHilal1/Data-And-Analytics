@@ -1,0 +1,44 @@
+-- Given a table of integers, write SQL queries to expand the table so that for each number n, 
+-- all numbers from 1 up to n are generated. Solve this using both a self-join method and a recursive CTE.
+
+-- SQL query to create table and insert data
+Create Table numbers (n int);
+
+INSERT INTO numbers VALUES(1),(2),(3),(4),(5),(9);
+
+-- Solution --
+
+WITH cte AS
+(SELECT DISTINCT n FROM numbers)
+SELECT c1.n
+FROM cte c1 
+INNER JOIN cte c2 ON 
+c1.n >= c2.n 
+ORDER BY c1.n;
+
+WITH RECURSIVE cte AS
+(
+	SELECT n, 0 AS count FROM numbers
+    UNION ALL 
+    SELECT n, count + 1 FROM cte WHERE count + 1 < n
+)
+SELECT n FROM cte ORDER BY n;
+
+WITH recursive cte AS
+(
+	SELECT 1 AS n, MAX(n) AS max_n FROM numbers 
+    UNION ALL
+    SELECT n + 1, max_n FROM cte WHERE n+1 <= max_n
+)
+SELECT n1.n FROM numbers n1 
+INNER JOIN cte ON n1.n >= cte.n;
+
+WITH cte AS
+(SELECT rn FROM
+(SELECT ROW_NUMBER() OVER () AS rn FROM subscription_history) numbers
+WHERE rn <=9)
+SELECT n 
+FROM numbers 
+INNER JOIN cte ON 
+numbers.n >= cte.rn 
+ORDER BY n;
