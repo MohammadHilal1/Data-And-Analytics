@@ -1,0 +1,29 @@
+-- Given table of phone numbers. You are supposed to find those numbers which does not contain
+-- any repeating numbers
+
+-- SQL query to create table and insert data
+
+create table phone_numbers (num varchar(20));
+insert into phone_numbers values
+('1234567780'),
+('2234578996'),
+('+1-12244567780'),
+('+32-2233567889'),
+('+2-23456987312'),
+('+91-9087654123'),
+('+23-9085761324'),
+('+11-8091013345');
+
+-- Solution
+
+WITH RECURSIVE cte AS
+(SELECT substring_index(num, "-", -1) AS num, 1 AS n FROM phone_numbers
+UNION ALL
+SELECT num, n+1 FROM cte WHERE n < LENGTH(num)),
+cte1 AS
+(SELECT num, n, SUBSTRING(num, n, 1) AS digit FROM cte ORDER BY num, n)
+SELECT num, 
+COUNT(digit) AS total_digits, 
+COUNT(distinct digit) AS unique_digits 
+FROM cte1 GROUP BY num
+HAVING unique_digits = total_digits;
