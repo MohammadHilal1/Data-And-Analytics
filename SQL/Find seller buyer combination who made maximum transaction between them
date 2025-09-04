@@ -1,0 +1,46 @@
+-- Given a transaction table Which contains transactions between seller and buyer. The structure of table is 
+-- Transaction_id, customer_id, amount, trans_date
+-- Every successful transaction will have 2 row entries in the table with two different transaction ids, the first one for the seller
+-- where their customer_id will be registered and the second one for the buyer where there customer_id will be registered. The amount adn date time
+-- for both will however be the same.
+-- Write an SQL query to find the top 5 seller buyer combinations who have had maximum transaction between them
+-- Disqualify the sellers who have acted as buyers and also the buyers who have acted as sellers 
+
+-- SQL query to create table and insert data
+
+CREATE TABLE transactions (
+    transaction_id INT PRIMARY KEY,
+    customer_id INT,
+    amount INT,
+    tran_Date datetime
+);
+INSERT INTO Transactions VALUES (1, 101, 500, '2025-01-01 10:00:01');
+INSERT INTO Transactions VALUES (2, 201, 500, '2025-01-01 10:00:01');
+INSERT INTO Transactions VALUES (3, 102, 300, '2025-01-02 00:50:01');
+INSERT INTO Transactions VALUES (4, 202, 300, '2025-01-02 00:50:01');
+INSERT INTO Transactions VALUES (5, 101, 700, '2025-01-03 06:00:01');
+INSERT INTO Transactions VALUES (6, 202, 700, '2025-01-03 06:00:01');
+INSERT INTO Transactions VALUES (7, 103, 200, '2025-01-04 03:00:01');
+INSERT INTO Transactions VALUES (8, 203, 200, '2025-01-04 03:00:01');
+INSERT INTO Transactions VALUES (9, 101, 400, '2025-01-05 00:10:01');
+INSERT INTO Transactions VALUES (10, 201, 400, '2025-01-05 00:10:01');
+INSERT INTO Transactions VALUES (11, 101, 500, '2025-01-07 10:10:01');
+INSERT INTO Transactions VALUES (12, 201, 500, '2025-01-07 10:10:01');
+INSERT INTO Transactions VALUES (13, 102, 200, '2025-01-03 10:50:01');
+INSERT INTO Transactions VALUES (14, 202, 200, '2025-01-03 10:50:01');
+INSERT INTO Transactions VALUES (15, 103, 500, '2025-01-01 11:00:01');
+INSERT INTO Transactions VALUES (16, 101, 500, '2025-01-01 11:00:01');
+INSERT INTO Transactions VALUES (17, 203, 200, '2025-11-01 11:00:01');
+INSERT INTO Transactions VALUES (18, 201, 200, '2025-11-01 11:00:01');
+
+-- Solution --
+
+WITH cte AS
+(SELECT * , ROW_NUMBER() OVER (PARTITION BY tran_date) AS rn FROM transactions)
+SELECT q1.customer_id AS buyer, q2.customer_id AS seller, COUNT(*) AS no_of_transactions FROM
+(SELECT * FROM cte WHERE rn = 1) q1
+JOIN (SELECT * FROM cte WHERE rn = 2) q2
+ON q1.tran_date = q2.tran_date 
+AND q1.customer_id NOT IN (SELECT customer_id FROM cte WHERE rn = 2) 
+AND q2.customer_id NOT IN (SELECT customer_id FROM cte WHERE rn = 1)
+GROUP BY q1.customer_id, q2.customer_id;
