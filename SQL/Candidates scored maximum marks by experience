@@ -1,0 +1,44 @@
+-- Write an sql query that, for each experence level counts the total number of candidates
+-- and how many of them got a perfect score in each category which they requested to solve task for
+-- a NULL means that candidate was not requested to solve task in that category
+
+-- SQL query to create table and insert data
+
+create table assessments
+(
+id int,
+experience int,
+mysql int,
+algo int,
+bug_fixing int
+);
+
+insert into assessments values 
+(1,3,100,null,50),
+(2,5,null,100,100),
+(3,1,100,100,100),
+(4,5,100,50,null),
+(5,5,100,100,100);
+
+-- Solution 1 --
+WITH cte AS
+(SELECT *, CASE WHEN mysql IS NULL OR mysql = 100 THEN 1 ELSE 0 END +
+CASE WHEN algo IS NULL OR algo = 100 THEN 1 ELSE 0 END + 
+CASE WHEN bug_fixing IS NULL OR bug_fixing = 100 THEN 1 ELSE 0 END AS max_score_subjects
+FROM assessments)
+SELECT experience, 
+COUNT(id) as candidates, 
+COUNT(CASE WHEN max_score_subjects = 3 THEN 1 ELSE NULL END) scored_maximum FROM cte 
+GROUP BY experience;
+
+-- Solution 2 --
+WITH cte AS
+(SELECT id, experience, mysql AS score, "mysql" AS subject FROM assessments
+UNION ALL
+SELECT id, experience, algo AS score, "algo" AS subject FROM assessments
+UNION ALL 
+SELECT id, experience, bug_fixing AS score, "bug_fixing" AS subject FROM assessments)
+SELECT experience, COUNT(CASE WHEN max_score = 3 THEN 1 ELSE NULL END) AS max, COUNT(id) AS candidates FROM
+(SELECT id, experience, SUM(CASE WHEN score = 100 OR score IS NULL THEN 1 ELSE 0 END) AS scored_maximum FROM cte
+GROUP BY id, experience) iq
+GROUP BY experience;
