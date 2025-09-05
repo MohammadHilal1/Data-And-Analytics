@@ -102,3 +102,17 @@ GROUP BY Cuisine, Restaurant_id),
 cte1 AS
 (SELECT *, ROW_NUMBER() OVER (PARTITION BY Cuisine ORDER BY items_ordered DESC) AS rn FROM cte)
 SELECT Cuisine, Restaurant_id, items_ordered FROM cte1 WHERE rn = 1;
+
+-- Find the daily new customer count from the launch date (Everyday how many customers we are aquiring)
+WITH cte AS
+(SELECT *, 
+ROW_NUMBER() OVER (PARTITION BY Customer_code ORDER BY DATE(Placed_at) ASC) AS rn 
+FROM orders
+ORDER BY Date(Placed_at)) 
+SELECT DATE(Placed_at) AS date, 
+COUNT(*) as new_customers 
+FROM cte 
+WHERE rn = 1
+GROUP BY DATE(Placed_at);
+
+
