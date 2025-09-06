@@ -115,4 +115,12 @@ FROM cte
 WHERE rn = 1
 GROUP BY DATE(Placed_at);
 
+-- Count all the users who were aqured in Jan 2025 and only placed one order in Jan and did not place any other order
+SELECT COUNT(*) AS total_users FROM
+(SELECT Customer_code, 
+COUNT(*) AS total_purchase 
+FROM orders WHERE MONTH(Placed_at) = 01 AND Year(Placed_at) = 2025 
+AND Customer_code NOT IN (SELECT Customer_code FROM orders WHERE NOT (MONTH(Placed_at) = 1 AND YEAR(Placed_at) = 2025))
+GROUP BY customer_code
+HAVING COUNT(*) = 1) q1;
 
