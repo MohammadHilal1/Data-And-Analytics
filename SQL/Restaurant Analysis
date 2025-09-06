@@ -124,3 +124,15 @@ AND Customer_code NOT IN (SELECT Customer_code FROM orders WHERE NOT (MONTH(Plac
 GROUP BY customer_code
 HAVING COUNT(*) = 1) q1;
 
+-- List all the customers with no orders in the last 7 days but were aquired one month ago with their first order on promo
+WITH cte AS
+(SELECT *, 
+MIN(Placed_at) OVER (PARTITION BY Customer_code) AS first_order,
+MAX(Placed_at) OVER (PARTITION BY Customer_code) AS last_order,
+MAX(Placed_at) OVER () AS max_date 
+FROM orders)
+SELECT 
+DISTINCT Customer_code FROM cte 
+WHERE last_order < DATE_ADD(max_date, INTERVAL -7 DAY) 
+AND first_order < DATE_ADD(max_date, INTERVAL -1 MONTH) 
+AND Promo_code_name IS NOT NULL;
