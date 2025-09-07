@@ -136,3 +136,21 @@ DISTINCT Customer_code FROM cte
 WHERE last_order < DATE_ADD(max_date, INTERVAL -7 DAY) 
 AND first_order < DATE_ADD(max_date, INTERVAL -1 MONTH) 
 AND Promo_code_name IS NOT NULL;
+
+-- Growth team is planning to create a trigger that will target customers after their every third order
+-- with a personalized communication and they have asked you to create a query for this
+
+WITH cte AS
+(SELECT *, 
+ROW_NUMBER() OVER (PARTITION BY Customer_code ORDER BY Placed_at ASC) AS rn
+FROM orders)
+SELECT * FROM cte WHERE rn % 3 = 0 AND Date(Placed_at) = DATE((SELECT MAX(Placed_at) FROM orders));
+
+-- list customers who placed more than one order and all their orders on a promo only
+WITH cte AS
+(SELECT *, 
+COUNT(*) OVER (PARTITION BY Customer_code) AS total_orders,
+COUNT(CASE WHEN Promo_code_name IS NOT NULL THEN 1 END) OVER (PARTITION BY Customer_code) As orders_with_promo
+FROM orders)
+SELECT DISTINCT Customer_code FROM cte WHERE total_orders > 1 AND total_orders = orders_with_promo;
+
