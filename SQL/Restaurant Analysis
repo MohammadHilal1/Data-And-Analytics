@@ -154,3 +154,11 @@ COUNT(CASE WHEN Promo_code_name IS NOT NULL THEN 1 END) OVER (PARTITION BY Custo
 FROM orders)
 SELECT DISTINCT Customer_code FROM cte WHERE total_orders > 1 AND total_orders = orders_with_promo;
 
+-- What percent of customers were actually acquired in jan 2025. (Placed there first order without promo)
+WITH cte AS
+(SELECT *, 
+MIN(Placed_at) OVER (PARTITION BY Customer_code) AS first_order 
+FROM orders WHERE MONTH(Placed_at) = 1),
+cte1 AS
+(SELECT COUNT(DISTINCT Customer_code) as cust_in_jan FROM cte WHERE first_order = Placed_at AND Promo_code_name IS NULL)
+SELECT ROUND((SELECT cust_in_jan FROM cte1)*100/COUNT(DISTINCT Customer_code), 2) as Percent_of_customers_acquired_in_jan FROM cte;
