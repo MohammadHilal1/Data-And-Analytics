@@ -1,0 +1,5 @@
+-- Write SQL queries that compute the following. Keep in mind that your queries should compute the correct result on any legal instance of this database.
+-- (a) Co-investors: Compute all pairs of politicians (pname1, pname2) such that pname1 invests in some company, 
+-- and pname2 invests in a subsidiary of that company. Sort your results by pname1, breaking ties by pname2.
+-- For the given instance, you should return (Don, Hil) because Don invests in C1, Hil invests in C3, and C3 is a subsidiary of C1. 
+-- You should not return (Don, Ron), who both invest in C1, because we don’t consider a company to be a subsidiary of itself.
