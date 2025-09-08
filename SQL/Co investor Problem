@@ -3,3 +3,40 @@
 -- and pname2 invests in a subsidiary of that company. Sort your results by pname1, breaking ties by pname2.
 -- For the given instance, you should return (Don, Hil) because Don invests in C1, Hil invests in C3, and C3 is a subsidiary of C1. 
 -- You should not return (Don, Ron), who both invest in C1, because we don’t consider a company to be a subsidiary of itself.
+
+-- SQL Query to create table and insert data
+
+CREATE TABLE Invested (
+    pname VARCHAR(10),
+    cname VARCHAR(10)
+);
+
+CREATE TABLE Subsidiary (
+    parent VARCHAR(10),
+    child VARCHAR(10)
+);
+
+-- Investments
+INSERT INTO Invested (pname, cname) VALUES
+('Don', 'C1'),
+('Don', 'C4'),
+('Ron', 'C1'),
+('Hil', 'C3');
+
+-- Subsidiary relationships
+INSERT INTO Subsidiary (parent, child) VALUES
+('C1', 'C2'),
+('C2', 'C3'),
+('C2', 'C5'),
+('C4', 'C6');
+
+-- Solution
+
+WITH RECURSIVE CTE AS (
+SELECT parent, child FROM subsidiary
+UNION ALL
+SELECT CTE.parent, s.child FROM CTE INNER JOIN
+subsidiary s ON CTE.child = s.Parent)
+
+SELECT i.pname, c.pname FROM CTE INNER JOIN invested i ON CTE.parent = i.cname
+INNER JOIN invested c ON CTE.child = c.cname;
