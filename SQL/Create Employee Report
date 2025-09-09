@@ -52,3 +52,23 @@ VALUES
     (6, '2017-11-22', 50000, 'No'),
     (6, '2018-11-22', 40000, 'No'),
     (6, '2021-09-10', 75000, 'Yes');
+
+-- Solution
+
+-- Find the latest salary for each employee
+WITH rank_emp_sal AS
+(
+SELECT *, 
+RANK() OVER (PARTITION BY employee_id ORDER By salary DESC) AS rank_sal
+FROM salary_history
+),
+
+latest_sal AS 
+(SELECT * FROM rank_emp_sal 
+WHERE rank_sal = 1),
+
+-- Total number of promotions received by each employee
+promotions AS 
+(SELECT employee_id, 
+COALESCE(COUNT(CASE WHEN Promotion = "Yes" THEN 1 ELSE NULL END), 0) as promotions FROM salary_history 
+GROUP BY employee_id),
