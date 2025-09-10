@@ -95,6 +95,56 @@ CAST(ROW_NUMBER() OVER (PARTITION BY employee_id ORDER By salary) AS SIGNED) - C
 FROM salary_history),
 emp_with_no_decrease_salary AS
 (SELECT  employee_id, 
+
+-- Find the average time between salary changes for each employees
+sal_change_diff AS
+(SELECT *, 
+LEAD(change_date,1,change_date) OVER (PARTITION BY employee_id ORDER BY change_date) AS next_sal_change,
+TIMESTAMPDIFF(MONTH, change_date, LEAD(change_date,1,change_date) OVER (PARTITION BY employee_id ORDER BY change_date)) AS diff
+FROM salary_history),
+avg_months AS
+(SELECT employee_id, 
+SUM(diff) / (COUNT(*)-1) AS avg_months_sal_change 
+FROM sal_change_diff 
+GROUP BY employee_id),
+
+-- Rank employees by salary growth rate, breaking ties by earliest join date
+rank_salaries AS
+(SELECT *, RANK() OVER (PARTITION BY employee_id ORDER BY change_date ASC) AS rn,
+RANK() OVER (PARTITION BY employee_id ORDER BY change_date DESC) AS rn1
+FROM salary_history),
+emp_sal_growth AS
+(SELECT employee_id,
+MAX(CASE WHEN rn1=1 THEN salary END)/MAX(CASE WHEN rn=1 THEN salary END) AS growth,
+MIN(change_date) AS join_date
+FROM rank_salaries 
+GROUP BY employee_id),
+rank_emp_sal_growth AS
+(SELECT *, 
+RANK() OVER (ORDER BY growth DESC, join_date ASC) as rn 
+FROM emp_sal_growth)
+
+SELECT e.employee_id, 
+e.name, 
+s.salary,
+p.promotions,
+m.max_sal_hike as max_sal_hike_percentage,
+nds.never_decreased,
+am.avg_months_sal_change,
+re.rn
+FROM employees e 
+LEFT JOIN latest_sal s 
+ON e.employee_id = s.employee_id
+LEFT JOIN promotions p 
+ON p.employee_id = e.employee_id
+LEFT JOIN max_sal_hikes m 
+ON m.employee_id = e.employee_id
+LEFT JOIN emp_with_no_decrease_salary nds
+ON nds.employee_id = e.employee_id
+LEFT JOIN avg_months am
+ON am.employee_id = e.employee_id
+LEFT JOIN rank_emp_sal_growth re
+ON re.employee_id = e.employee_id;
 COUNT(CASE WHEN diff = 0 THEN 1 ELSE null END) AS count, COUNT(*) AS count1, 
 CASE WHEN COUNT(CASE WHEN diff = 0 THEN 1 ELSE null END) = COUNT(*) THEN "Yes" ELSE "No" END AS never_decreased
 FROM rank_emp_salaries 
