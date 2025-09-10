@@ -72,3 +72,30 @@ promotions AS
 (SELECT employee_id, 
 COALESCE(COUNT(CASE WHEN Promotion = "Yes" THEN 1 ELSE NULL END), 0) as promotions FROM salary_history 
 GROUP BY employee_id),
+
+-- Maximum salary hike percentage between any two consecutive salary changes for each employee
+emp_sal_hikes AS
+(SELECT *, 
+LAG(salary, 1, salary) OVER (PARTITION BY employee_id ORDER BY change_date ASC) prev_sal,
+salary -  LAG(salary, 1, salary) OVER (PARTITION BY employee_id ORDER BY change_date ASC) AS sal_diff,
+round((salary -  LAG(salary, 1, salary) OVER (PARTITION BY employee_id ORDER BY change_date ASC))/LAG(salary, 1, salary) OVER (PARTITION BY employee_id ORDER BY change_date ASC) * 100, 2) as sal_hike
+FROM salary_history),
+max_sal_hikes AS
+(SELECT employee_id, 
+MAX(sal_hike) as max_sal_hike 
+FROM emp_sal_hikes 
+GROUP BY employee_id),
+
+-- Identify employees whose salary has never decreased over time
+rank_emp_salaries AS
+(SELECT *, 
+ROW_NUMBER() OVER (PARTITION BY employee_id ORDER By salary) AS rn,
+ROW_NUMBER() OVER (PARTITION BY employee_id ORDER By change_date ASC) AS rn1,
+CAST(ROW_NUMBER() OVER (PARTITION BY employee_id ORDER By salary) AS SIGNED) - CAST(ROW_NUMBER() OVER (PARTITION BY employee_id ORDER By change_date ASC) AS SIGNED) AS diff
+FROM salary_history),
+emp_with_no_decrease_salary AS
+(SELECT  employee_id, 
+COUNT(CASE WHEN diff = 0 THEN 1 ELSE null END) AS count, COUNT(*) AS count1, 
+CASE WHEN COUNT(CASE WHEN diff = 0 THEN 1 ELSE null END) = COUNT(*) THEN "Yes" ELSE "No" END AS never_decreased
+FROM rank_emp_salaries 
+GROUP BY employee_id),
