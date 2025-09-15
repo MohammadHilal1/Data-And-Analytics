@@ -37,3 +37,29 @@ INSERT INTO input_table_2 (Country, State, City) VALUES
 ('India', 'UP', 'Mirzapur'),
 ('India', 'Delhi', NULL), 
 ('India', 'Orissa', NULL); 
+
+-- Solution
+
+WITH cte AS
+(SELECT Country, State, City, Sales FROM input_table_2 it1
+INNER JOIN input_table_1 it2 ON
+it1.City = it2.Market
+UNION ALL
+SELECT Distinct Country , State, "" AS City, ifnull(Sales, 0) FROM input_table_2 it1
+LEFT JOIN input_Table_1 it2 ON
+it1.State = it2.Market
+UNION ALL
+SELECT DISTINCT Country, "" AS State, "" AS City, Sales FROM input_table_2 it1
+INNER JOIN input_Table_1 it2 ON
+it1.Country = it2.Market),
+cte1 AS
+(SELECT *, 
+SUM(CASE WHEN Country != "" AND State != "" AND City != "" THEN Sales ELSE 0 END) OVER (Partition BY State) AS state_sales,
+SUM(CASE WHEN State != "" AND City = "" THEN Sales ELSE 0 END) OVER () AS country_sales
+FROM cte)
+SELECT Country, 
+State, 
+City, 
+CASE WHEN State = "" AND City = "" THEN Sales - country_sales 
+WHEN State != "" AND City = "" THEN Sales - state_sales ELSE Sales END AS sales FROM cte1
+ORDER BY Country, State, City ASC;
