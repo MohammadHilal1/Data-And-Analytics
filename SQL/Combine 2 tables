@@ -1,0 +1,39 @@
+-- Given two tables you need to combine them and return the desired result
+
+-- SQL to create table and insert data
+-- Create Person table
+CREATE TABLE Person (
+    personId INT PRIMARY KEY,
+    lastName VARCHAR(50),
+    firstName VARCHAR(50)
+);
+
+-- Insert values into Person
+INSERT INTO Person (personId, lastName, firstName) VALUES
+(1, 'Wang', 'Allen'),
+(2, 'Alice', 'Bob');
+
+-- Create Address table
+CREATE TABLE Address (
+    addressId INT PRIMARY KEY,
+    personId INT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    FOREIGN KEY (personId) REFERENCES Person(personId)
+);
+
+-- Insert values into Address
+INSERT INTO Address (addressId, personId, city, state) VALUES
+(1, 2, 'New York City', 'New York'),
+(2, 3, 'Leetcode', 'California');
+
+-- Solution
+
+SELECT Person.firstname, 
+Person.lastname,
+Address.city,
+Address.state FROM 
+Person 
+LEFT JOIN
+Address ON
+Person.personId = Address.personId;
