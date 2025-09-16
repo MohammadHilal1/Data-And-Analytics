@@ -1,0 +1,23 @@
+-- Given employees table you need to find the employees who earn more than their managers
+
+-- SQL query to create table and insert data
+
+Create Table Employee(
+id int primary key,
+name varchar(30),
+salary int,
+managerId int
+);
+
+INSERT INTO Employee VALUES(1, "Joe", 70000, 3),
+(2, "Henry", 80000, 4),
+(3, "Sam", 60000, NULL),
+(4, "Max", 90000, NULL);
+
+-- Solution
+
+SELECT emp.name AS Employee FROM Employee emp 
+INNER JOIN
+Employee manager
+ON emp.managerId = manager.id
+WHERE emp.salary > manager.salary;
