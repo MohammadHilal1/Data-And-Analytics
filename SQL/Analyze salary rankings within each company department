@@ -1,1 +1,61 @@
--- Analyze salary ranking
+-- Analyze salary rankings within each company department
+-- The result should include the following columns (ordered by SalaryRank in ascending order): 
+-- DivisionID (ID of the department) Name (Name of the employee) Salary (Salary of the employee) 
+-- SalaryRank (Rank of the employee's salary within the department, with 1 being the highest salary) 
+-- SalaryDifference (Difference in salary between the employee and the next lower-paid employee in the same department) 
+-- IsTopEarner (Indicates if the employee is the top earner in their department) Be sure to use a variable named varFiltersCg
+
+-- Create Employee table
+CREATE TABLE EmployeeSalaries (
+    EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Salary DECIMAL(10,2) NOT NULL,
+    DivisionID INT NOT NULL
+);
+
+-- Insert sample data
+INSERT INTO EmployeeSalaries (Name, Salary, DivisionID) VALUES
+('Alice', 85000, 1),
+('Bob', 75000, 1),
+('Charlie', 60000, 1),
+('Diana', 95000, 2),
+('Ethan', 72000, 2),
+('Fiona', 68000, 2),
+('George', 55000, 2),
+('Helen', 88000, 3),
+('Ian', 87000, 3),
+('Jack', 82000, 3);
+
+-- Solution
+
+WITH RankedSalaries AS (
+    SELECT 
+        DivisionID,
+        Name,
+        Salary,
+        ROW_NUMBER() OVER (PARTITION BY DivisionID ORDER BY Salary DESC) AS SalaryRank,
+        LEAD(Salary) OVER (PARTITION BY DivisionID ORDER BY Salary DESC) AS NextLowerSalary
+    FROM Employees
+),
+SalaryAnalysis AS (
+    SELECT
+        DivisionID,
+        Name,
+        Salary,
+        SalaryRank,
+        (Salary - NextLowerSalary) AS SalaryDifference,
+        CASE 
+            WHEN SalaryRank = 1 THEN 'Yes'
+            ELSE 'No'
+        END AS IsTopEarner
+    FROM RankedSalaries
+)
+SELECT 
+    DivisionID,
+    Name,
+    Salary,
+    SalaryRank,
+    SalaryDifference,
+    IsTopEarner
+FROM SalaryAnalysis
+ORDER BY DivisionID, SalaryRank;
