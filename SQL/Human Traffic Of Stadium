@@ -1,0 +1,25 @@
+-- Given a visit table where visit_date is the column with unique values for this table.
+-- Each row of this table contains the visit date and visit id to the stadium with the number of people during the visit.
+-- As the id increases, the date increases as well.
+-- Write a solution to display the records with three or more rows with consecutive id's, 
+-- and the number of people is greater than or equal to 100 for each.
+-- Return the result table ordered by visit_date in ascending order.
+
+-- SQL query to create table and insert data
+-- Create Stadium table
+CREATE TABLE Stadium (
+    id INT PRIMARY KEY,
+    visit_date DATE NOT NULL,
+    people INT NOT NULL
+);
+
+-- Insert values into Stadium
+INSERT INTO Stadium (id, visit_date, people) VALUES
+(1, '2017-01-01', 10),
+(2, '2017-01-02', 109),
+(3, '2017-01-03', 150),
+(4, '2017-01-04', 99),
+(5, '2017-01-05', 145),
+(6, '2017-01-06', 1455),
+(7, '2017-01-07', 199),
+(8, '2017-01-09', 188);
