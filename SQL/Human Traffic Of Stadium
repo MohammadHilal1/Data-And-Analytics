@@ -23,3 +23,24 @@ INSERT INTO Stadium (id, visit_date, people) VALUES
 (6, '2017-01-06', 1455),
 (7, '2017-01-07', 199),
 (8, '2017-01-09', 188);
+
+-- Solution
+
+WITH cte AS
+(SELECT *
+FROM Stadium
+WHERE people >= 100
+ORDER BY visit_date ASC),
+cte1 AS (
+    SELECT *,
+    ROW_NUMBER() OVER () AS rn 
+    FROM cte
+),
+cte2 AS
+(SELECT *, 
+id - rn AS diff,
+count(*) OVER (Partition by id-rn) as diff_freq
+FROM cte1)
+SELECT id, visit_date, people FROM cte2
+WHERE diff_freq >= 3
+ORDER BY id;
