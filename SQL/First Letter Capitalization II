@@ -1,0 +1,23 @@
+-- Given a table user_content
+-- content_id is the unique key for this table.
+-- Each row contains a unique ID and the corresponding text content.
+-- Write a solution to transform the text in the content_text column by applying the following rules:
+-- Convert the first letter of each word to uppercase and the remaining letters to lowercase
+-- Special handling for words containing special characters:
+-- For words connected with a hyphen -, both parts should be capitalized (e.g., top-rated → Top-Rated)
+-- All other formatting and spacing should remain unchanged
+
+-- SQL query to create table and insert data
+
+-- Create user_content table
+CREATE TABLE user_content (
+    content_id INT PRIMARY KEY,
+    content_text VARCHAR(255) NOT NULL
+);
+
+-- Insert sample data
+INSERT INTO user_content (content_id, content_text) VALUES
+(1, 'hello world of SQL'),
+(2, 'the QUICK-brown fox'),
+(3, 'modern-day DATA science'),
+(4, 'web-based FRONT-end development');
