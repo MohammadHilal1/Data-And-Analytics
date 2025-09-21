@@ -21,3 +21,49 @@ INSERT INTO user_content (content_id, content_text) VALUES
 (2, 'the QUICK-brown fox'),
 (3, 'modern-day DATA science'),
 (4, 'web-based FRONT-end development');
+
+-- Solution
+
+WITH recursive words AS (
+    SELECT content_id,
+    SUBSTRING_INDEX(content_text, " ", 1) AS word,
+    SUBSTRING(content_text, LENGTH(SUBSTRING_INDEX(content_text, " ", 1)) + 2) AS 
+    remaining_text, 
+    content_text AS original_text,
+    1 as token_index
+    FROM user_content
+    UNION ALL
+    SELECT 
+    content_id,
+    SUBSTRING_INDEX(remaining_text, " ", 1) AS word,
+    SUBSTRING(remaining_text, LENGTH(SUBSTRING_INDEX(remaining_text, " ", 1)) + 2) AS
+    remaining_text, 
+    original_text,
+    token_index + 1 AS token_index
+    FROM words
+    WHERE remaining_text != ""
+),
+converted AS (
+    SELECT content_id,
+    original_text,
+    GROUP_CONCAT(
+        IF(
+            word LIKE '%-%',
+            CONCAT(
+                UPPER(SUBSTRING(word, 1, 1)),
+                LOWER(SUBSTRING(word, 2, LOCATE("-", word) - 2)),
+                "-",
+                UPPER(SUBSTRING(SUBSTRING_INDEX(word, "-", -1), 1, 1)),
+                LOWER(SUBSTRING(SUBSTRING_INDEX(word, "-", -1), 2))
+            ),
+            CONCAT(
+                UPPER(SUBSTRING(word, 1, 1)),
+                LOWER(SUBSTRING(word, 2))
+            )
+        )
+        ORDER BY token_index SEPARATOR " "
+    ) AS converted_text
+    FROM words
+    GROUP BY content_id, original_text
+)
+SELECT * FROM converted;
