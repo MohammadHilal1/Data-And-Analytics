@@ -55,3 +55,26 @@ INSERT INTO ProductPurchases (user_id, product_id, quantity) VALUES
 (5, 103, 1),
 (5, 201, 2),
 (5, 202, 3);
+
+-- Solution
+
+WITH cte1 AS (
+    SELECT PP.*, PI.category FROM ProductPurchases PP
+    INNER JOIN ProductInfo PI
+    ON PP.product_id = PI.product_id
+),
+cte2 AS
+(SELECT one.user_id, 
+one.category AS category1,
+two.category AS category2 FROM cte1 AS one
+INNER JOIN cte1 AS two
+ON one.user_id = two.user_id 
+AND one.category != two.category
+AND one.category <= two.category
+AND one.product_id != two.product_id
+ORDER BY one.user_id)
+SELECT category1, category2, COUNT(DISTINCT user_id) as customer_count
+FROM cte2
+GROUP BY category1, category2
+HAVING COUNT(DISTINCT user_id) >= 3
+ORDER BY COUNT(DISTINCT user_id) DESC, category1 ASC, category2 ASC; 
