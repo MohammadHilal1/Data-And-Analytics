@@ -11,3 +11,65 @@
 -- (sum of salaries of all employees under them, including indirect reports, plus their own salary).
 -- Return the result table ordered by the result ordered by level in ascending order, 
 -- then by budget in descending order, and finally by employee_name in ascending order.
+
+-- SQL query to create table and insert data
+
+-- Create Employees table
+CREATE TABLE Employees (
+    employee_id INT PRIMARY KEY,
+    employee_name VARCHAR(50),
+    manager_id INT NULL,
+    salary INT,
+    department VARCHAR(50)
+);
+
+-- Insert data
+INSERT INTO Employees (employee_id, employee_name, manager_id, salary, department) VALUES
+(1, 'Alice', NULL, 12000, 'Executive'),
+(2, 'Bob', 1, 10000, 'Sales'),
+(3, 'Charlie', 1, 10000, 'Engineering'),
+(4, 'David', 2, 7500, 'Sales'),
+(5, 'Eva', 2, 7500, 'Sales'),
+(6, 'Frank', 3, 9000, 'Engineering'),
+(7, 'Grace', 3, 8500, 'Engineering'),
+(8, 'Hank', 4, 6000, 'Sales'),
+(9, 'Ivy', 6, 7000, 'Engineering'),
+(10, 'Judy', 6, 7000, 'Engineering');
+
+-- Solution
+
+WITH RECURSIVE cte AS (
+    SELECT *, 1 AS level FROM Employees
+    WHERE manager_id IS NULL
+    UNION ALL
+    SELECT Employees.*, cte.level + 1 AS level FROM Employees INNER JOIN
+    cte ON Employees.manager_id = cte.employee_id
+),
+subordinates AS (
+    SELECT 
+    employee_id AS manager_id,
+    employee_id AS subordinate_id,
+    salary
+    FROM Employees
+    UNION ALL
+    SELECT 
+    S.manager_id,
+    E.employee_id,
+    E.salary
+    FROM subordinates S
+    INNER JOIN Employees E
+    ON E.manager_id = S.subordinate_id
+)
+
+SELECT m.employee_id,
+m.employee_name,
+c.level,
+COUNT(s.subordinate_id) - 1 AS team_size,
+SUM(s.salary) AS budget
+FROM subordinates s
+INNER JOIN employees m
+ON m.employee_id = s.manager_id
+INNER JOIN cte c ON
+m.employee_id = c.employee_id
+GROUP BY m.employee_id, m.employee_name, m.manager_id
+ORDER By c.level ASC, SUM(s.salary) DESC, m.employee_name ASC;
