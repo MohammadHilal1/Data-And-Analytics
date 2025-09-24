@@ -29,3 +29,11 @@ INSERT INTO Stocks (stock_name, operation, operation_day, price) VALUES
 ('Corona Masks', 'Buy', 6, 1000),
 ('Handbags', 'Sell', 29, 7000),
 ('Corona Masks', 'Sell', 10, 10000);
+
+-- Solution
+
+SELECT stock_name,
+SUM(CASE WHEN operation="Sell" THEN price ELSE 0 END) - 
+SUM(CASE WHEN operation="Buy" THEN price ELSE 0 END) AS capital_gain_loss
+FROM Stocks
+GROUP BY stock_name;
