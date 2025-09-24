@@ -1,0 +1,22 @@
+-- find the sum of amounts for odd and even transactions for each day
+-- Given transactions table wheren transactions_id column uniquely identifies each row in the table.
+-- Each row of this table contains the transaction id, amount and transaction date.
+-- If there are no odd or even transactions for a specific date, display as 0.
+-- Return the result table ordered by transaction_date in ascending order.
+
+-- SQL query to create table and insert data
+-- Create transactions table
+CREATE TABLE transactions (
+    transaction_id INT PRIMARY KEY,
+    amount DECIMAL(10,2) NOT NULL,
+    transaction_date DATE NOT NULL
+);
+
+-- Insert data
+INSERT INTO transactions (transaction_id, amount, transaction_date) VALUES
+(1, 150, '2024-07-01'),
+(2, 200, '2024-07-01'),
+(3, 75, '2024-07-01'),
+(4, 300, '2024-07-02'),
+(5, 50, '2024-07-02'),
+(6, 120, '2024-07-03');
