@@ -1,0 +1,10 @@
+-- Find covid recovery patients
+-- Given patients table 
+-- patient_id is the unique identifier for this table. Each row contains information about a patient.
+-- Given covid_tests table
+-- test_id is the unique identifier for this table.Each row represents a COVID test result. The result can be Positive, Negative, or Inconclusive.
+-- Write a solution to find patients who have recovered from COVID - patients who tested positive but later tested negative.
+-- A patient is considered recovered if they have at least one Positive test followed by at least one Negative test on a later date
+-- Calculate the recovery time in days as the difference between the first positive test and the first negative test after that positive test
+-- Only include patients who have both positive and negative test results
+-- Return the result table ordered by recovery_time in ascending order, then by patient_name in ascending order.
