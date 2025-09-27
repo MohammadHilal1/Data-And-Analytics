@@ -8,3 +8,65 @@
 -- Calculate the recovery time in days as the difference between the first positive test and the first negative test after that positive test
 -- Only include patients who have both positive and negative test results
 -- Return the result table ordered by recovery_time in ascending order, then by patient_name in ascending order.
+
+-- SQL query to create table and insert data
+-- Patients table
+CREATE TABLE patients (
+    patient_id INT PRIMARY KEY,
+    patient_name VARCHAR(100),
+    age INT
+);
+
+-- Covid tests table
+CREATE TABLE covid_tests (
+    test_id INT PRIMARY KEY,
+    patient_id INT,
+    test_date DATE,
+    result VARCHAR(20),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+);
+
+-- Insert patients
+INSERT INTO patients (patient_id, patient_name, age) VALUES
+(1, 'Alice Smith', 28),
+(2, 'Bob Johnson', 35),
+(3, 'Carol Davis', 42),
+(4, 'David Wilson', 31),
+(5, 'Emma Brown', 29);
+
+-- Insert covid tests
+INSERT INTO covid_tests (test_id, patient_id, test_date, result) VALUES
+(1, 1, '2023-01-15', 'Positive'),
+(2, 1, '2023-01-25', 'Negative'),
+(3, 2, '2023-02-01', 'Positive'),
+(4, 2, '2023-02-05', 'Inconclusive'),
+(5, 2, '2023-02-12', 'Negative'),
+(6, 3, '2023-01-20', 'Negative'),
+(7, 3, '2023-02-10', 'Positive'),
+(8, 3, '2023-02-20', 'Negative'),
+(9, 4, '2023-01-10', 'Positive'),
+(10, 4, '2023-01-18', 'Positive'),
+(11, 5, '2023-02-15', 'Negative'),
+(12, 5, '2023-02-20', 'Negative');
+
+-- Solution
+
+WITH cte AS (SELECT * , 
+ROW_NUMBER() OVER (PARTITION BY patient_id, result ORDER BY test_date) AS rnk1
+FROM covid_tests),
+cte1 AS
+(SELECT c1.patient_id, 
+ROW_NUMBER() OVER (PARTITION BY c1.patient_id ORDER BY c2.test_date) AS rnk2,
+DATEDIFF(c2.test_date, c1.test_date) AS recovery_time
+FROM cte AS c1
+LEFT JOIN cte AS c2
+ON c1.patient_id = c2.patient_id
+AND c1.test_date < c2.test_date
+WHERE c1.result = "Positive"
+AND c1.rnk1 = 1 AND c2.result = "Negative")
+SELECT p.patient_id, p.patient_name, 
+p.age, cte1.recovery_time  FROM cte1
+INNER JOIN
+patients p
+ON cte1.patient_id = p.patient_id AND cte1.rnk2 = 1
+ORDER BY cte1.recovery_time ASC, p.patient_name ASC;
