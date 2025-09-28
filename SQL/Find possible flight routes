@@ -41,3 +41,37 @@ INSERT INTO flights VALUES
 (8, 'EWR', 'SFO', '2025-06-15 09:00', '2025-06-15 12:00'),
 (9, 'LAX', 'HND', '2025-06-15 13:00', '2025-06-15 23:00'),
 (10, 'KIX', 'NRT', '2025-06-15 08:00', '2025-06-15 10:00');
+
+-- Solution
+
+WITH cte1 AS (
+SELECT flights.*, s.city_name AS start_city, e.city_name AS end_city FROM flights 
+INNER JOIN airports s ON flights.start_port = s.port_code
+INNER JOIN airports e ON flights.end_port = e.port_code
+), direct AS (
+SELECT start_city AS trip_start_city, 
+null AS middle_city, 
+end_city AS trip_end_city,
+flight_id,
+TIMESTAMPDIFF(MINUTE, start_time, end_time)
+FROM cte1 
+WHERE start_city = "New York" AND end_city = "Tokyo"),
+indirect AS (
+SELECT a.start_city AS trip_start_city,
+a.end_city AS middle_city,
+b.end_city AS trip_end_city,
+CONCAT(a.flight_id, ",", b.flight_id) AS flight_id,
+TIMESTAMPDIFF(MINUTE, a.start_time, b.end_time) AS trip_end_time 
+FROM
+(SELECT * FROM cte1 
+WHERE start_city = "New York") a
+INNER JOIN
+(SELECT * FROM cte1
+WHERE end_city = "Tokyo") b
+ON a.end_city = b.start_city 
+WHERE b.start_time >= a.end_time
+)
+SELECT * FROM indirect
+UNION
+SELECT * FROM direct
+ORDER BY trip_end_time ASC;
