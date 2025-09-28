@@ -1,7 +1,17 @@
 -- Find possible flight routes
 -- Given airports and flights table
--- You have to find all the possible routes between NEW YORK and Tokyo
--- Make sure if there is connecting flight second flight start time must not be less than end time
+-- Each row in the table flights contains information about a flight: the time of departure (start_time), 
+-- time of landing (end_time), the code of its port of departure (start_port) and the code of its destination port (end_port).
+-- Each row in the table airports contains information about an airport: the city name (city_name) and the port code (port_code). 
+-- Each port_code is assigned to at most one airport.
+-- A passenger wants to travel from New York to Tokyo in the shortest possible time. 
+-- The passenger can start at any airport in New York and must finish their journey at any airport in Tokyo. 
+-- They can change planes at most once. A plane change is possible if the first flight ends no later than the start time of the second flight. 
+-- Note that it is possible to change planes if the end time of the first flight is equal to the start_time of the second flight. 
+-- The second flight must start from the airport at which the first flight ended.
+-- Write an SQL query that finds the shortest time in which this journey can occur. 
+-- Return the difference between the time of departure from New York and the time of arrival in Tokyo in minutes. 
+-- If such a journey is impossible, return NULL.
 
 -- SQL query to create table and insert data
 CREATE TABLE airports (
