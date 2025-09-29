@@ -25,3 +25,16 @@ INSERT INTO employee_attendance (emp_id, login, logout) VALUES
 (300, '2024-02-22 11:00:00', '2024-02-22 17:00:00'),
 (300, '2024-02-23 09:30:00', '2024-02-23 16:30:00');
 
+-- Solution
+
+WITH cte AS (select *, 
+timestampdiff(Hour, login, logout) as dif,
+COUNT(CASE WHEN timestampdiff(Hour,login, logout) >= 10 OR timestampdiff(Hour, login,logout) >= 8 THEN 1 END) OVER (PARTITION BY emp_id) AS "one",
+COUNT(CASE WHEN timestampdiff(Hour,login, logout) >= 9 THEN 1 END) OVER (PARTITION BY emp_id) AS "two"           
+from employees)
+SELECT emp_id, CASE WHEN MAX(one) >= 3 AND MAX(two) >= 2 THEN "Both" 
+WHEN MAX(two) >= 2 THEN 2 
+WHEN MAX(one) >= 3 THEN 1 ELSE "None" END AS criterion
+FROM cte
+GROUP BY emp_id;
+
