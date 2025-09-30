@@ -26,3 +26,19 @@ INSERT INTO user_events (userid, event_type, event_time) VALUES
 (2, 'click',  '2023-09-10 09:00:00'),
 (2, 'scroll', '2023-09-10 09:20:00'),
 (2, 'click',  '2023-09-10 10:30:00');
+
+
+-- Solution
+
+WITH cte AS (select *, 
+CASE WHEN TIMESTAMPDIFF(MINUTE,LAG(event_time, 1, event_time) OVER (PARTITION BY userid ORDER BY event_time), event_time) <= 30 THEN 0 ELSE 1 END as diff
+from events),
+cte1 AS (SELECT *, SUM(CASE WHEN diff = 1 THEN 1 ELSE 0 END) OVER (PARTITION BY userid ORDER BY event_time) As group_id 
+FROM cte)
+SELECT userid, group_id + 1 AS session_id, 
+MIN(event_time) AS session_start_time,
+MAX(event_time) AS session_end_time,
+TIMESTAMPDIFF(MINUTE, MIN(event_time), MAX(event_time)) AS session_duration,
+count(*) As event_count
+FROM cte1
+GROUP BY userid, group_id;
