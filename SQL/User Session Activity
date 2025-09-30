@@ -1,0 +1,28 @@
+-- 1. Identify user sessions. A session is defined as a sequence of activities by a user 
+-- where the time difference between consecutive events is less than or equal to 30 minutes. 
+-- If the time between two events exceeds 30 minutes, it's considered the start of a new session.
+-- 2. For each session, calculate the following metrics:
+-- session_id : a unique identifier for each session.
+-- session_start_time : the timestamp of the first event in the session.
+-- session_end_time : the timestamp of the last event in the session.
+-- session_duration : the difference between session_end_time and session_start_time
+-- event_count : the number of events in the session.
+
+-- Create Table and insert data statement
+
+CREATE TABLE user_events (
+    userid INT,
+    event_type VARCHAR(20),
+    event_time DATETIME
+);
+INSERT INTO user_events (userid, event_type, event_time) VALUES
+(1, 'click',  '2023-09-10 09:00:00'),
+(1, 'click',  '2023-09-10 10:00:00'),
+(1, 'scroll', '2023-09-10 10:20:00'),
+(1, 'click',  '2023-09-10 10:50:00'),
+(1, 'scroll', '2023-09-10 11:40:00'),
+(1, 'click',  '2023-09-10 12:40:00'),
+(1, 'scroll', '2023-09-10 12:50:00'),
+(2, 'click',  '2023-09-10 09:00:00'),
+(2, 'scroll', '2023-09-10 09:20:00'),
+(2, 'click',  '2023-09-10 10:30:00');
