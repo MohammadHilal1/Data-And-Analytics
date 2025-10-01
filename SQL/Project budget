@@ -37,3 +37,32 @@ INSERT INTO Projects (id, title, start_date, end_date, budget) VALUES
 (2, 'App Development', '2024-02-01', '2024-05-31', 100000),
 (3, 'Cloud Migration', '2024-03-01', '2024-04-30', 20000),
 (4, 'Analytics Platform', '2024-05-05', '2024-08-05', 80000);
+
+CREATE TABLE ProjectEmployee (
+    project_id INT,
+    employee_id INT
+);
+
+-- Insert data
+INSERT INTO ProjectEmployee (project_id, employee_id) VALUES
+(1, 1),
+(2, 2),
+(2, 3),
+(2, 4),
+(2, 5),
+(3, 6),
+(3, 7),
+(3, 8),
+(4, 6),
+(4, 7);
+
+WITH cte AS (SELECT projects.*, employees.salary FROM projects
+INNER JOIN project_employees
+ON projects.id = project_employees.project_id
+INNER JOIN employees ON
+project_employees.employee_id = employees.id)
+SELECT title, budget,
+CASE WHEN (SUM(salary) / 365) * MAX(timestampdiff(day, start_date, end_date)) <= budget THEN "within budget" ELSE "overbudget" END AS label
+FROM cte
+GROUP BY title, budget
+ORDER BY title;
