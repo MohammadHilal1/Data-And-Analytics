@@ -48,3 +48,20 @@ INSERT INTO promotions (emp_id, promotion_date, percent_increase) VALUES
 (4, '2021-09-25', 15),
 (4, '2023-09-01', 15),
 (4, '2024-09-30', 15);
+
+WITH RECURSIVE cte AS (
+SELECT id, name, joining_salary, CAST(joining_salary AS decimal(8,1)) AS current_sal, 0 AS promo_id FROM employees
+UNION ALL
+SELECT id, name, joining_salary,
+cte.current_sal * (100.0 + promos.percent_increase) / 100.0 AS current_sal,
+cte.promo_id + 1 
+FROM cte INNER JOIN
+(SELECT *,
+ROW_NUMBER() OVER (PARTITION BY emp_id ORDER BY promotion_date) AS promo_id FROM promotions) AS promos
+ON promos.emp_id = cte.id AND promos.promo_id = cte.promo_id+1)
+SELECT id, name, 
+joining_salary As initial_salary, 
+TRIM(TRAILING '.0' FROM MAX(current_sal)+0) AS current_salary
+FROM cte
+GROUP BY id, name, joining_salary
+ORDER BY id, name;
